@@ -31,10 +31,10 @@ const listQuerySchema = z.object({
   search: z.string().optional(),
 });
 
-// Authorized roles can view (Dispatcher and Safety Officer excluded from general registry)
-router.get('/', requireRole('FLEET_MANAGER', 'FINANCIAL_ANALYST'), validateQuery(listQuerySchema), ctrl.listVehicles);
-router.get('/available', requireRole('FLEET_MANAGER', 'FINANCIAL_ANALYST', 'DISPATCHER'), ctrl.getAvailableVehicles);
-router.get('/:id', requireRole('FLEET_MANAGER', 'FINANCIAL_ANALYST'), ctrl.getVehicle);
+// All operational roles can inspect the fleet; write actions remain manager-only.
+router.get('/', requireRole('FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'), validateQuery(listQuerySchema), ctrl.listVehicles);
+router.get('/available', requireRole('FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'), ctrl.getAvailableVehicles);
+router.get('/:id', requireRole('FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'), ctrl.getVehicle);
 
 // Only Fleet Manager can create/update/delete
 router.post('/', requireRole('FLEET_MANAGER'), validate(vehicleSchema), ctrl.createVehicle);
@@ -44,7 +44,8 @@ router.delete('/:id', requireRole('FLEET_MANAGER'), ctrl.deleteVehicle);
 const upload = require('../middlewares/upload');
 
 // Document Management
-router.get('/:id/documents', requireRole('FLEET_MANAGER', 'FINANCIAL_ANALYST'), ctrl.getDocuments);
+router.get('/:id/documents', requireRole('FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'), ctrl.getDocuments);
 router.post('/:id/documents', requireRole('FLEET_MANAGER'), upload.single('document'), ctrl.uploadDocument);
+router.delete('/:id/documents/:documentId', requireRole('FLEET_MANAGER'), ctrl.deleteDocument);
 
 module.exports = router;

@@ -22,6 +22,9 @@ const analyticsRoutes = require('./src/routes/analytics');
 const settingsRoutes = require('./src/routes/settings');
 const searchRoutes = require('./src/routes/search');
 const notificationRoutes = require('./src/routes/notifications');
+const reportRoutes = require('./src/routes/reports');
+const userRoutes = require('./src/routes/users');
+const auditLogRoutes = require('./src/routes/auditLogs');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -31,7 +34,7 @@ const io = new Server(httpServer, {
 // Attach io to the app so routes can use it
 app.set('io', io);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // ─── Global Middleware ────────────────────────────────────────────────────────
 
@@ -39,7 +42,7 @@ app.use(helmet({ crossOriginResourcePolicy: false })); // allow images to be loa
 app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173', credentials: true }));
 app.use(express.json());
 // Serve static uploads folder
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // Rate limiter — auth routes are stricter
@@ -65,6 +68,9 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api', searchRoutes);
 app.use('/api', notificationRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 

@@ -49,15 +49,15 @@ async function getDashboardKPIs() {
     insuranceAlertsRaw,
     driverSafetyRank,
   ] = await Promise.all([
+    prisma.trip.findMany({
+      where: { status: 'COMPLETED' },
+      select: { id: true },
+    }),
     prisma.vehicle.count(),
     prisma.vehicle.count({ where: { status: 'AVAILABLE' } }),
     prisma.vehicle.count({ where: { status: 'IN_SHOP' } }),
     prisma.vehicle.count({ where: { status: 'ON_TRIP' } }),
     prisma.vehicle.count({ where: { status: 'RETIRED' } }),
-    prisma.trip.findMany({
-      where: { status: 'COMPLETED' },
-      select: { id: true },
-    }),
     prisma.trip.count({ where: { status: 'DISPATCHED' } }),
     prisma.trip.count({ where: { status: 'DRAFT' } }),
     prisma.driver.count({ where: { status: { in: ['AVAILABLE', 'ON_TRIP'] } } }),
@@ -95,6 +95,10 @@ async function getDashboardKPIs() {
       orderBy: { created_at: 'desc' },
       include: { vehicle: { select: { registration_number: true, name_model: true } } },
     }),
+    prisma.trip.findMany({ where: { created_at: { gte: sixMonthsAgo } }, select: { created_at: true } }),
+    prisma.fuelLog.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, liters: true, cost: true } }),
+    prisma.maintenanceLog.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, cost: true } }),
+    prisma.expense.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, total: true, category: true } }),
     prisma.vehicle.findMany({
       where: {
         status: { not: 'RETIRED' },
@@ -104,10 +108,6 @@ async function getDashboardKPIs() {
       orderBy: { insurance_expiry: 'asc' },
       select: { id: true, registration_number: true, name_model: true, insurance_expiry: true },
     }),
-    prisma.trip.findMany({ where: { created_at: { gte: sixMonthsAgo } }, select: { created_at: true } }),
-    prisma.fuelLog.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, liters: true, cost: true } }),
-    prisma.maintenanceLog.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, cost: true } }),
-    prisma.expense.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, total: true, category: true } }),
     prisma.driver.findMany({
       take: 8,
       orderBy: { safety_score: 'desc' },

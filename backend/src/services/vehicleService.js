@@ -80,6 +80,12 @@ async function addDocument(vehicleId, url, name) {
   });
 }
 
+async function deleteDocument(vehicleId, documentId) {
+  const document = await prisma.document.findFirst({ where: { id: documentId, vehicle_id: vehicleId } });
+  if (!document) throw new AppError('Document not found.', 404, 'NOT_FOUND');
+  return prisma.document.delete({ where: { id: documentId } });
+}
+
 module.exports = {
   listVehicles,
   getAvailableVehicles,
@@ -89,4 +95,5 @@ module.exports = {
   deleteVehicle,
   getDocuments,
   addDocument,
+  deleteDocument,
 };

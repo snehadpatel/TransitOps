@@ -64,8 +64,15 @@ async function uploadDocument(req, res, next) {
   } catch (err) { next(err); }
 }
 
+async function deleteDocument(req, res, next) {
+  try {
+    await vehicleService.deleteDocument(req.params.id, req.params.documentId);
+    res.status(204).send();
+  } catch (err) { next(err); }
+}
+
 module.exports = {
   listVehicles, getAvailableVehicles, getVehicle,
   createVehicle, updateVehicle, deleteVehicle,
-  getDocuments, uploadDocument
+  getDocuments, uploadDocument, deleteDocument
 };
