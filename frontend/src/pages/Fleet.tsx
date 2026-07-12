@@ -20,6 +20,13 @@ interface ApiResponse {
   meta: { total: number };
 }
 
+interface VehicleDocument {
+  id: string;
+  name: string;
+  url: string;
+  uploaded_at?: string;
+}
+
 const STATUS_BADGE: Record<string, string> = {
   AVAILABLE: 'badge badge-available',
   ON_TRIP: 'badge badge-on_trip',
@@ -50,10 +57,11 @@ const Fleet: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [showDocsModal, setShowDocsModal] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [docs, setDocs] = useState<{name: string, url: string}[]>([]);
+  const [docs, setDocs] = useState<VehicleDocument[]>([]);
+  const [docsError, setDocsError] = useState('');
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -112,30 +120,44 @@ const Fleet: React.FC = () => {
     }
   };
 
-  const handleOpenDocs = async (vehicle: any) => {
+  const getAssetUrl = (url: string) => {
+    const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
+    if (!apiUrl || apiUrl.startsWith('/')) return url;
+    return `${apiUrl.replace(/\/api\/?$/, '')}${url}`;
+  };
+
+  const handleOpenDocs = async (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
     setShowDocsModal(true);
+    setDocs([]);
+    setDocsError('');
     try {
-      const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-      const res = await fetch(`${VITE_API_URL}/vehicles/${vehicle.id || vehicle.reg}/documents`, {
+      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      const res = await fetch(`${apiUrl}/vehicles/${vehicle.id}/documents`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
         setDocs(await res.json());
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setDocsError(data.error || 'Failed to load documents.');
       }
-    } catch(err) { console.error(err); }
+    } catch {
+      setDocsError('Failed to load documents.');
+    }
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0] || !selectedVehicle) return;
     setUploading(true);
+    setDocsError('');
     const file = e.target.files[0];
     const formData = new FormData();
     formData.append('document', file);
     
     try {
-      const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-      const res = await fetch(`${VITE_API_URL}/vehicles/${selectedVehicle.id || selectedVehicle.reg}/documents`, {
+      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      const res = await fetch(`${apiUrl}/vehicles/${selectedVehicle.id}/documents`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
         body: formData
@@ -143,9 +165,35 @@ const Fleet: React.FC = () => {
       if (res.ok) {
         const newDoc = await res.json();
         setDocs([newDoc, ...docs]);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setDocsError(data.error || 'Failed to upload document.');
       }
-    } catch (err) { console.error(err); }
+    } catch {
+      setDocsError('Failed to upload document.');
+    }
     setUploading(false);
+    e.target.value = '';
+  };
+
+  const handleDeleteDocument = async (documentId: string) => {
+    if (!selectedVehicle || !confirm('Delete this document?')) return;
+    setDocsError('');
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      const res = await fetch(`${apiUrl}/vehicles/${selectedVehicle.id}/documents/${documentId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+      });
+      if (res.ok) {
+        setDocs((prev) => prev.filter((doc) => doc.id !== documentId));
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setDocsError(data.error || 'Failed to delete document.');
+      }
+    } catch {
+      setDocsError('Failed to delete document.');
+    }
   };
 
   const formatCurrency = (val: number) =>
@@ -376,7 +424,9 @@ const Fleet: React.FC = () => {
               <h3 style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '4px' }}>
                 <i className="fas fa-folder-open" style={{ marginRight: '8px', color: 'var(--tx-primary)' }}></i>Documents
               </h3>
-              <p style={{ fontSize: '0.82rem', color: 'var(--tx-text-muted)', marginBottom: '16px' }}>Upload and view vehicle documents (PDF/PNG).</p>
+              <p style={{ fontSize: '0.82rem', color: 'var(--tx-text-muted)', marginBottom: '16px' }}>
+                {selectedVehicle.registration_number} · upload and view PDF, JPG, or PNG documents up to 5 MB.
+              </p>
               
               <div style={{ marginBottom: '16px' }}>
                 <input type="file" id="docUpload" style={{ display: 'none' }} accept=".pdf,image/*" onChange={handleUpload} />
@@ -386,16 +436,29 @@ const Fleet: React.FC = () => {
                 </label>
               </div>
 
+              {docsError && (
+                <div className="rule-error" style={{ marginBottom: '12px' }}>
+                  <i className="fas fa-circle-exclamation"></i>{docsError}
+                </div>
+              )}
+
               <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {docs.length === 0 ? (
                   <div className="empty-state" style={{ padding: '30px' }}>
                     <i className="fas fa-file-lines" style={{ display: 'block' }}></i>
                     No documents found.
                   </div>
-                ) : docs.map((d, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'var(--tx-bg-alt)', borderRadius: '10px', border: '1px solid var(--tx-border)' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 500 }}><i className="fas fa-file" style={{ marginRight: '8px', color: 'var(--tx-primary)' }}></i>{d.name}</span>
-                    <a href={`http://localhost:5001${d.url}`} target="_blank" rel="noreferrer" className="btn btn-outline-primary btn-sm">View</a>
+                ) : docs.map((d) => (
+                  <div key={d.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', padding: '12px', background: 'var(--tx-bg-alt)', borderRadius: '10px', border: '1px solid var(--tx-border)' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 500, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <i className="fas fa-file" style={{ marginRight: '8px', color: 'var(--tx-primary)' }}></i>{d.name}
+                    </span>
+                    <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                      <a href={getAssetUrl(d.url)} target="_blank" rel="noreferrer" className="btn btn-outline-primary btn-sm">View</a>
+                      <button onClick={() => handleDeleteDocument(d.id)} className="btn btn-danger btn-sm" title="Delete document">
+                        <i className="fas fa-trash"></i>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

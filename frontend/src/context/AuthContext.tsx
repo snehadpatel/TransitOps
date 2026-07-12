@@ -85,17 +85,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const register = async (name: string, email: string, password: string, role: string) => {
-    const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-    const res = await fetch(`${VITE_API_URL}/auth/register`, {
+    const apiUrl = import.meta.env.VITE_API_URL || '/api';
+    const res = await fetch(`${apiUrl}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password, role })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to register');
-    
-    // Auto login
-    login(data.token, data.user);
+
+    const rawRole: string = data.user.role;
+    const displayRole = (ROLE_DISPLAY[rawRole] ?? rawRole) as Role;
+    const userData: User = {
+      id: data.user.id,
+      name: data.user.name,
+      email: data.user.email,
+      role: displayRole,
+      rawRole,
+    };
+
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
   };
 
   return (

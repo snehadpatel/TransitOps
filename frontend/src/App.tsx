@@ -34,7 +34,7 @@ function App() {
             } />
 
             <Route path="/fleet" element={
-              <ProtectedRoute allowedRoles={['Fleet Manager', 'Dispatcher', 'Financial Analyst']}>
+              <ProtectedRoute allowedRoles={['Fleet Manager', 'Dispatcher', 'Safety Officer', 'Financial Analyst']}>
                 <Layout><Fleet /></Layout>
               </ProtectedRoute>
             } />
@@ -46,13 +46,13 @@ function App() {
             } />
 
             <Route path="/trips" element={
-              <ProtectedRoute allowedRoles={['Dispatcher', 'Safety Officer']}>
+              <ProtectedRoute allowedRoles={['Fleet Manager', 'Dispatcher', 'Safety Officer', 'Financial Analyst']}>
                 <Layout><Trips /></Layout>
               </ProtectedRoute>
             } />
 
             <Route path="/trips/:id" element={
-              <ProtectedRoute allowedRoles={['Dispatcher', 'Safety Officer']}>
+              <ProtectedRoute allowedRoles={['Fleet Manager', 'Dispatcher', 'Safety Officer', 'Financial Analyst']}>
                 <Layout><TripDetail /></Layout>
               </ProtectedRoute>
             } />
@@ -64,19 +64,19 @@ function App() {
             } />
 
             <Route path="/maintenance" element={
-              <ProtectedRoute allowedRoles={['Fleet Manager']}>
+              <ProtectedRoute allowedRoles={['Fleet Manager', 'Dispatcher', 'Safety Officer', 'Financial Analyst']}>
                 <Layout><Maintenance /></Layout>
               </ProtectedRoute>
             } />
 
             <Route path="/expenses" element={
-              <ProtectedRoute allowedRoles={['Financial Analyst']}>
+              <ProtectedRoute allowedRoles={['Fleet Manager', 'Dispatcher', 'Safety Officer', 'Financial Analyst']}>
                 <Layout><Expenses /></Layout>
               </ProtectedRoute>
             } />
 
             <Route path="/analytics" element={
-              <ProtectedRoute allowedRoles={['Financial Analyst']}>
+              <ProtectedRoute allowedRoles={['Fleet Manager', 'Financial Analyst']}>
                 <Layout><Analytics /></Layout>
               </ProtectedRoute>
             } />
