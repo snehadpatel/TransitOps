@@ -33,6 +33,14 @@ function App() {
             </ProtectedRoute>
           } />
 
+          <Route path="/maintenance" element={
+            <ProtectedRoute allowedRoles={['Fleet Manager']}>
+              <Layout>
+                <Maintenance />
+              </Layout>
+            </ProtectedRoute>
+          } />
+
           <Route path="/drivers" element={
             <ProtectedRoute allowedRoles={['Fleet Manager', 'Dispatcher', 'Safety Officer']}>
               <Layout>
