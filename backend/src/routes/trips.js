@@ -18,6 +18,8 @@ const tripSchema = z.object({
   eta: z.coerce.date().optional(),
 });
 
+const tripUpdateSchema = tripSchema.partial();
+
 const completeSchema = z.object({
   final_odometer: z.coerce.number().positive().optional(),
   fuel_consumed: z.coerce.number().min(0).optional(),
@@ -47,6 +49,7 @@ router.get(
 
 // Only Dispatcher can create/manage trips
 router.post('/', requireRole('DISPATCHER'), validate(tripSchema), ctrl.createTrip);
+router.patch('/:id', requireRole('DISPATCHER'), validate(tripUpdateSchema), ctrl.updateTrip);
 router.patch('/:id/dispatch', requireRole('DISPATCHER'), ctrl.dispatchTrip);
 router.patch('/:id/complete', requireRole('DISPATCHER'), validate(completeSchema), ctrl.completeTrip);
 router.patch('/:id/cancel', requireRole('DISPATCHER'), ctrl.cancelTrip);

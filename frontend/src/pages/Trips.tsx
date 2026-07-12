@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { getSocket } from '../services/socket';
 
@@ -57,6 +58,7 @@ const EMPTY_FORM = {
 };
 
 const Trips: React.FC = () => {
+  const navigate = useNavigate();
   const [availableVehicles, setAvailableVehicles] = useState<Vehicle[]>([]);
   const [availableDrivers, setAvailableDrivers] = useState<Driver[]>([]);
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -319,7 +321,7 @@ const Trips: React.FC = () => {
             ) : (
               <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                 {trips.map((trip) => (
-                  <li key={trip.id} style={{ padding: '16px 22px', borderBottom: '1px solid var(--tx-border)', transition: 'background 0.15s ease', cursor: 'default' }}
+                  <li key={trip.id} onClick={() => navigate(`/trips/${trip.id}`)} style={{ padding: '16px 22px', borderBottom: '1px solid var(--tx-border)', transition: 'background 0.15s ease', cursor: 'pointer' }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--tx-primary-light)')}
                     onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

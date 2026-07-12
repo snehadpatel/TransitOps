@@ -12,6 +12,7 @@ interface Vehicle {
   acquisition_cost: number;
   status: string;
   region?: string;
+  insurance_expiry?: string | null;
 }
 
 interface ApiResponse {
@@ -41,6 +42,7 @@ const EMPTY_FORM = {
   odometer: '0',
   acquisition_cost: '',
   region: '',
+  insurance_expiry: '',
 };
 
 const Fleet: React.FC = () => {
@@ -91,12 +93,15 @@ const Fleet: React.FC = () => {
     setSaving(true);
     setSaveError('');
     try {
-      await api.post('/vehicles', {
+      const payload = {
         ...form,
         max_load_capacity: parseFloat(form.max_load_capacity),
         odometer: parseFloat(form.odometer),
         acquisition_cost: parseFloat(form.acquisition_cost),
-      });
+        ...(form.insurance_expiry ? { insurance_expiry: form.insurance_expiry } : {}),
+      };
+
+      await api.post('/vehicles', payload);
       setShowAddModal(false);
       setForm(EMPTY_FORM);
       fetchVehicles();
@@ -148,6 +153,20 @@ const Fleet: React.FC = () => {
 
   const formatKm = (val: number) =>
     `${val.toLocaleString('en-IN')} km`;
+
+  const getInsuranceBadge = (expiry?: string | null) => {
+    if (!expiry) return 'badge badge-draft';
+    const days = Math.ceil((new Date(expiry).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / (1000 * 60 * 60 * 24));
+    if (days < 0) return 'badge badge-cancelled';
+    if (days <= 30) return 'badge badge-in_shop';
+    return 'badge badge-available';
+  };
+
+  const formatInsurance = (expiry?: string | null) => {
+    if (!expiry) return 'Not set';
+    const date = new Date(expiry);
+    return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -218,6 +237,7 @@ const Fleet: React.FC = () => {
                 <th>Capacity</th>
                 <th>Odometer</th>
                 <th>Acq. Cost</th>
+                <th>Insurance Expiry</th>
                 <th>Status</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
@@ -225,7 +245,7 @@ const Fleet: React.FC = () => {
             <tbody>
               {vehicles.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="empty-state">
+                  <td colSpan={9} className="empty-state">
                     <i className="fas fa-truck" style={{ display: 'block' }}></i>
                     No vehicles found.
                   </td>
@@ -238,6 +258,13 @@ const Fleet: React.FC = () => {
                   <td>{v.max_load_capacity} kg</td>
                   <td>{formatKm(v.odometer)}</td>
                   <td>{formatCurrency(v.acquisition_cost)}</td>
+                  <td>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span className={getInsuranceBadge(v.insurance_expiry)}>
+                        {formatInsurance(v.insurance_expiry)}
+                      </span>
+                    </div>
+                  </td>
                   <td>
                     <span className={STATUS_BADGE[v.status] ?? 'badge badge-draft'}>
                       {STATUS_LABEL[v.status] ?? v.status}
@@ -305,6 +332,10 @@ const Fleet: React.FC = () => {
                     <label className="form-label">Region</label>
                     <input type="text" value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} className="form-control" placeholder="e.g. North" />
                   </div>
+                </div>
+                <div>
+                  <label className="form-label">Insurance Expiry</label>
+                  <input type="date" value={form.insurance_expiry} onChange={(e) => setForm({ ...form, insurance_expiry: e.target.value })} className="form-control" />
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                   <div>
@@ -375,6 +406,10 @@ const Fleet: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {selectedVehicle && !showDocsModal && (
+        <div style={{ display: 'none' }} />
       )}
     </div>
   );

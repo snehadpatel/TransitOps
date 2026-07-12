@@ -18,6 +18,14 @@ async function createTrip(req, res, next) {
   } catch (err) { next(err); }
 }
 
+async function updateTrip(req, res, next) {
+  try {
+    const trip = await tripService.updateDraftTrip(req.params.id, req.body);
+    req.app.get('io').emit('trip-updated');
+    res.json(trip);
+  } catch (err) { next(err); }
+}
+
 async function dispatchTrip(req, res, next) {
   try {
     const trip = await tripService.dispatchTrip(req.params.id);
@@ -45,4 +53,4 @@ async function cancelTrip(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { listTrips, getTrip, createTrip, dispatchTrip, completeTrip, cancelTrip };
+module.exports = { listTrips, getTrip, createTrip, updateTrip, dispatchTrip, completeTrip, cancelTrip };

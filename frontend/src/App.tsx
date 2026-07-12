@@ -9,6 +9,8 @@ import Dashboard from './pages/Dashboard';
 import Fleet from './pages/Fleet';
 import Drivers from './pages/Drivers';
 import Trips from './pages/Trips';
+import TripDetail from './pages/TripDetail';
+import TripEdit from './pages/TripEdit';
 import Maintenance from './pages/Maintenance';
 import Expenses from './pages/Expenses';
 import Analytics from './pages/Analytics';
@@ -46,6 +48,18 @@ function App() {
             <Route path="/trips" element={
               <ProtectedRoute allowedRoles={['Dispatcher', 'Safety Officer']}>
                 <Layout><Trips /></Layout>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/trips/:id" element={
+              <ProtectedRoute allowedRoles={['Dispatcher', 'Safety Officer']}>
+                <Layout><TripDetail /></Layout>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/trips/:id/edit" element={
+              <ProtectedRoute allowedRoles={['Dispatcher']}>
+                <Layout><TripEdit /></Layout>
               </ProtectedRoute>
             } />
 

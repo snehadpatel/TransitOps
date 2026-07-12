@@ -67,6 +67,26 @@ async function createTrip(data) {
   });
 }
 
+async function updateDraftTrip(tripId, data) {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId },
+    include: { vehicle: true, driver: true },
+  });
+  if (!trip) throw new AppError('Trip not found.', 404, 'NOT_FOUND');
+  if (trip.status !== 'DRAFT') {
+    throw new AppError(`Cannot edit a trip with status "${trip.status}".`, 409, 'INVALID_STATUS');
+  }
+
+  return prisma.trip.update({
+    where: { id: tripId },
+    data,
+    include: {
+      vehicle: { select: { id: true, registration_number: true, name_model: true } },
+      driver: { select: { id: true, name: true } },
+    },
+  });
+}
+
 // ─── Dispatch (DRAFT → DISPATCHED) ───────────────────────────────────────────
 
 /**
@@ -252,4 +272,4 @@ async function cancelTrip(tripId) {
   return updatedTrip;
 }
 
-module.exports = { listTrips, getTripById, createTrip, dispatchTrip, completeTrip, cancelTrip };
+module.exports = { listTrips, getTripById, createTrip, updateDraftTrip, dispatchTrip, completeTrip, cancelTrip };
