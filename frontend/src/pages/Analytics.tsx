@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { api } from '../services/api';
@@ -25,6 +25,9 @@ const Analytics: React.FC = () => {
   const [kpis, setKpis] = useState<ReportsKPIs | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [months, setMonths] = useState(6);
+
+  const CHART_COLORS = ['#4f6ef7', '#17c1a3', '#f5a623', '#ef4b5f', '#4fc3f7', '#6a5cf0'];
 
   const fetchKPIs = useCallback(async () => {
     setLoading(true);

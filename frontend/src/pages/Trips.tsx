@@ -35,7 +35,7 @@ interface TripsResponse {
 
 const STATUS_BADGE: Record<string, string> = {
   DRAFT: 'badge badge-draft',
-  DISPATCHED: 'badge badge-dispatched',
+  DISPATCHED: 'badge badge-on_trip',
   COMPLETED: 'badge badge-completed',
   CANCELLED: 'badge badge-cancelled',
 };
@@ -193,218 +193,154 @@ const Trips: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Trip Dispatcher</h2>
+    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      {/* Page Header */}
+      <div className="page-header">
+        <div>
+          <div className="section-title"><i className="fas fa-route" style={{ marginRight: '8px', color: 'var(--tx-primary)' }}></i>Trip Dispatcher</div>
+          <div className="section-subtitle">Create and manage trips with live status tracking</div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))', gap: '20px' }}>
         {/* Create & Dispatch Trip Form */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-800">CREATE & DISPATCH TRIP</h3>
+        <div className="tx-card">
+          <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--tx-border)' }}>
+            <h3 style={{ margin: 0, fontWeight: 700, fontSize: '0.95rem' }}>
+              <i className="fas fa-truck-fast" style={{ marginRight: '8px', color: 'var(--tx-primary)' }}></i>
+              Create &amp; Dispatch Trip
+            </h3>
           </div>
-          <div className="p-6 space-y-4">
+          <div className="tx-card-body">
 
             {/* Stepper */}
-            <div className="flex items-center justify-between mb-4 px-4">
-              <div className="flex flex-col items-center">
-                <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs">1</div>
-                <span className="text-[10px] mt-1 text-gray-500 uppercase">Draft</span>
-              </div>
-              <div className="flex-1 h-px bg-gray-300 mx-2"></div>
-              <div className="flex flex-col items-center">
-                <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs">2</div>
-                <span className="text-[10px] mt-1 text-gray-500 uppercase">Dispatched</span>
-              </div>
-              <div className="flex-1 h-px bg-gray-300 mx-2"></div>
-              <div className="flex flex-col items-center">
-                <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-xs">3</div>
-                <span className="text-[10px] mt-1 text-gray-500 uppercase">Completed</span>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', padding: '0 8px' }}>
+              {[{ n: 1, label: 'Draft', active: true }, { n: 2, label: 'Dispatched', active: true }, { n: 3, label: 'Completed', active: false }].map((step, i, arr) => (
+                <React.Fragment key={step.n}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: step.active ? 'linear-gradient(135deg, var(--tx-primary), #6a5cf0)' : 'var(--tx-bg-alt)', color: step.active ? '#fff' : 'var(--tx-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, boxShadow: step.active ? '0 4px 12px rgba(79,110,247,0.35)' : 'none' }}>{step.n}</div>
+                    <span style={{ fontSize: '0.65rem', marginTop: '6px', color: 'var(--tx-text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{step.label}</span>
+                  </div>
+                  {i < arr.length - 1 && <div style={{ flex: 1, height: '2px', background: 'var(--tx-border)', margin: '0 8px', marginBottom: '18px' }} />}
+                </React.Fragment>
+              ))}
             </div>
 
-            <form onSubmit={handleDispatch} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
-                <input
-                  required
-                  type="text"
-                  value={form.source}
-                  onChange={(e) => setForm({ ...form, source: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 text-sm"
-                  placeholder="e.g. Gandhinagar Depot"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Destination</label>
-                <input
-                  required
-                  type="text"
-                  value={form.destination}
-                  onChange={(e) => setForm({ ...form, destination: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 text-sm"
-                  placeholder="e.g. Ahmedabad Hub"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleDispatch} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle (Available Only)</label>
-                  <select
-                    required
-                    value={form.vehicle_id}
-                    onChange={(e) => setForm({ ...form, vehicle_id: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 text-sm"
-                    disabled={loadingResources}
-                  >
+                  <label className="form-label">Source</label>
+                  <input required type="text" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className="form-control" placeholder="e.g. Gandhinagar Depot" />
+                </div>
+                <div>
+                  <label className="form-label">Destination</label>
+                  <input required type="text" value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} className="form-control" placeholder="e.g. Ahmedabad Hub" />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label className="form-label">Vehicle (Available Only)</label>
+                  <select required value={form.vehicle_id} onChange={(e) => setForm({ ...form, vehicle_id: e.target.value })} className="form-select" disabled={loadingResources}>
                     <option value="">Select...</option>
                     {availableVehicles.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.registration_number} — {v.max_load_capacity} kg
-                      </option>
+                      <option key={v.id} value={v.id}>{v.registration_number} — {v.max_load_capacity} kg</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Driver (Available Only)</label>
-                  <select
-                    required
-                    value={form.driver_id}
-                    onChange={(e) => setForm({ ...form, driver_id: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 text-sm"
-                    disabled={loadingResources}
-                  >
+                  <label className="form-label">Driver (Available Only)</label>
+                  <select required value={form.driver_id} onChange={(e) => setForm({ ...form, driver_id: e.target.value })} className="form-select" disabled={loadingResources}>
                     <option value="">Select...</option>
                     {availableDrivers.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name} ({d.license_category})
-                      </option>
+                      <option key={d.id} value={d.id}>{d.name} ({d.license_category})</option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cargo Weight (kg)</label>
-                  <input
-                    required
-                    type="number"
-                    min="0.1"
-                    step="0.1"
-                    value={form.cargo_weight}
-                    onChange={(e) => setForm({ ...form, cargo_weight: e.target.value })}
-                    className={`w-full p-2 border rounded-md focus:ring-amber-500 focus:border-amber-500 text-sm ${capacityExceeded ? 'border-red-500' : 'border-gray-300'}`}
-                    placeholder="0"
-                  />
+                  <label className="form-label">Cargo Weight (kg)</label>
+                  <input required type="number" min="0.1" step="0.1" value={form.cargo_weight} onChange={(e) => setForm({ ...form, cargo_weight: e.target.value })} className="form-control" style={capacityExceeded ? { borderColor: 'var(--tx-danger)' } : {}} placeholder="0" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Planned Distance (km)</label>
-                  <input
-                    required
-                    type="number"
-                    min="1"
-                    step="0.1"
-                    value={form.planned_distance}
-                    onChange={(e) => setForm({ ...form, planned_distance: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 text-sm"
-                    placeholder="0"
-                  />
+                  <label className="form-label">Planned Distance (km)</label>
+                  <input required type="number" min="1" step="0.1" value={form.planned_distance} onChange={(e) => setForm({ ...form, planned_distance: e.target.value })} className="form-control" placeholder="0" />
                 </div>
               </div>
 
               {capacityExceeded && selectedVehicle && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md flex items-start text-sm text-red-700">
-                  <svg className="h-5 w-5 mr-2 text-red-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <span>
-                    <strong>Capacity exceeded!</strong> Vehicle capacity: {selectedVehicle.max_load_capacity} kg, Cargo: {cargoWeight} kg — exceeded by {(cargoWeight - selectedVehicle.max_load_capacity).toFixed(1)} kg → dispatch blocked.
-                  </span>
+                <div className="rule-error">
+                  <i className="fas fa-triangle-exclamation"></i>
+                  <span><strong>Capacity exceeded!</strong> Vehicle: {selectedVehicle.max_load_capacity} kg, Cargo: {cargoWeight} kg — exceeded by {(cargoWeight - selectedVehicle.max_load_capacity).toFixed(1)} kg → dispatch blocked.</span>
                 </div>
               )}
-
-              {dispatchError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
-                  {dispatchError}
-                </div>
-              )}
-
+              {dispatchError && <div className="rule-error"><i className="fas fa-circle-exclamation"></i>{dispatchError}</div>}
               {dispatchSuccess && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
-                  ✅ {dispatchSuccess}
+                <div className="rule-hint" style={{ background: 'rgba(23,193,163,0.1)', borderColor: 'rgba(23,193,163,0.3)', color: '#0e8f78' }}>
+                  <i className="fas fa-circle-check"></i>{dispatchSuccess}
                 </div>
               )}
 
-              <div className="pt-2 flex space-x-3">
-                <button
-                  type="submit"
-                  disabled={capacityExceeded || dispatching || !form.cargo_weight || !form.vehicle_id || !form.driver_id}
-                  className="flex-1 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 disabled:cursor-not-allowed text-white py-2 rounded-md font-medium transition-colors"
-                >
+              <div style={{ display: 'flex', gap: '12px', paddingTop: '4px' }}>
+                <button type="submit" disabled={capacityExceeded || dispatching || !form.cargo_weight || !form.vehicle_id || !form.driver_id} className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+                  <i className="fas fa-truck-fast"></i>
                   {dispatching ? 'Dispatching...' : 'Dispatch Shipment'}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => { setForm(EMPTY_FORM); setDispatchError(''); setDispatchSuccess(''); }}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Clear
-                </button>
+                <button type="button" onClick={() => { setForm(EMPTY_FORM); setDispatchError(''); setDispatchSuccess(''); }} className="btn btn-light">Clear</button>
               </div>
             </form>
           </div>
         </div>
 
         {/* Live Board */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h3 className="text-lg font-medium text-gray-800">LIVE BOARD</h3>
-            <button
-              onClick={fetchTrips}
-              className="text-xs text-amber-600 hover:text-amber-800 font-medium"
-            >
-              ↻ Refresh
+        <div className="tx-card">
+          <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--tx-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontWeight: 700, fontSize: '0.95rem' }}>
+              <i className="fas fa-signal" style={{ marginRight: '8px', color: 'var(--tx-primary)' }}></i>
+              Live Board
+            </h3>
+            <button onClick={fetchTrips} className="btn btn-light btn-sm">
+              <i className="fas fa-arrows-rotate"></i> Refresh
             </button>
           </div>
-          <div className="p-0">
+          <div>
             {loadingTrips ? (
-              <div className="p-8 text-center text-gray-500 text-sm">Loading trips...</div>
+              <div style={{ padding: '60px', textAlign: 'center', color: 'var(--tx-text-muted)' }}>
+                <i className="fas fa-spinner fa-spin" style={{ fontSize: '1.4rem' }}></i>
+                <div style={{ marginTop: '10px', fontSize: '0.875rem' }}>Loading trips...</div>
+              </div>
             ) : trips.length === 0 ? (
-              <div className="p-8 text-center text-gray-400 text-sm">No trips yet. Dispatch your first trip!</div>
+              <div className="empty-state">
+                <i className="fas fa-route"></i>
+                <div>No trips yet. Dispatch your first trip!</div>
+              </div>
             ) : (
-              <ul className="divide-y divide-gray-200">
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                 {trips.map((trip) => (
-                  <li key={trip.id} className="p-4 hover:bg-gray-50">
-                    <div className="flex justify-between">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-gray-900">{trip.trip_code}</p>
-                        <p className="text-sm text-gray-600 mt-1 truncate">{trip.source} → {trip.destination}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          <span className="font-medium text-gray-700">{trip.vehicle.registration_number}</span> • {trip.driver.name}
+                  <li key={trip.id} style={{ padding: '16px 22px', borderBottom: '1px solid var(--tx-border)', transition: 'background 0.15s ease', cursor: 'default' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--tx-primary-light)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem', color: 'var(--tx-text)' }}>{trip.trip_code}</p>
+                        <p style={{ margin: '5px 0', fontSize: '0.83rem', color: 'var(--tx-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{trip.source} → {trip.destination}</p>
+                        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--tx-text-muted)' }}>
+                          <span style={{ fontWeight: 600, color: 'var(--tx-text)' }}>{trip.vehicle.registration_number}</span> &bull; {trip.driver.name}
                         </p>
                       </div>
-                      <div className="text-right ml-3 flex-shrink-0">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${STATUS_BADGE[trip.status] ?? 'bg-gray-100 text-gray-700'}`}>
+                      <div style={{ textAlign: 'right', marginLeft: '12px', flexShrink: 0 }}>
+                        <span className={STATUS_BADGE[trip.status] ?? 'badge badge-draft'}>
                           {STATUS_LABEL[trip.status] ?? trip.status}
                         </span>
                         {trip.status === 'DISPATCHED' && (
-                          <div className="flex space-x-1 mt-2">
-                            <button
-                              onClick={() => handleComplete(trip.id)}
-                              disabled={actioningId === trip.id}
-                              className="text-[10px] px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
-                            >
-                              Complete
+                          <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                            <button onClick={() => handleComplete(trip.id)} disabled={actioningId === trip.id} className="btn btn-success btn-sm" style={{ fontSize: '0.7rem', padding: '4px 10px' }}>
+                              <i className="fas fa-check"></i> Complete
                             </button>
-                            <button
-                              onClick={() => handleCancel(trip.id)}
-                              disabled={actioningId === trip.id}
-                              className="text-[10px] px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-                            >
-                              Cancel
+                            <button onClick={() => handleCancel(trip.id)} disabled={actioningId === trip.id} className="btn btn-danger btn-sm" style={{ fontSize: '0.7rem', padding: '4px 10px' }}>
+                              <i className="fas fa-xmark"></i> Cancel
                             </button>
                           </div>
                         )}
