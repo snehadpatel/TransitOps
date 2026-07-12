@@ -7,18 +7,13 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
 enum Role {
   FLEET_MANAGER
-  DRIVER
+  DISPATCHER
   SAFETY_OFFICER
   FINANCIAL_ANALYST
-}
-
-enum DriverStatus {
-  AVAILABLE
-  ON_TRIP
-  OFF_DUTY
-  SUSPENDED
 }
 
 enum VehicleStatus {
@@ -26,6 +21,13 @@ enum VehicleStatus {
   ON_TRIP
   IN_SHOP
   RETIRED
+}
+
+enum DriverStatus {
+  AVAILABLE
+  ON_TRIP
+  OFF_DUTY
+  SUSPENDED
 }
 
 enum TripStatus {
@@ -40,82 +42,145 @@ enum MaintenanceStatus {
   CLOSED
 }
 
-enum ExpenseType {
-  FUEL
-  TOLL
-  OTHER
-}
+// ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
-  password_hash String
-  role          Role
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
-  Driver        Driver?
+  id                   String    @id @default(uuid())
+  name                 String
+  email                String    @unique
+  password_hash        String
+  role                 Role
+  failed_login_attempts Int      @default(0)
+  locked_until         DateTime?
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+
+  @@index([email])
+}
+
+model Vehicle {
+  id                  String        @id @default(uuid())
+  registration_number String        @unique
+  name_model          String
+  type                String
+  max_load_capacity   Float
+  odometer            Float         @default(0)
+  acquisition_cost    Float
+  status              VehicleStatus @default(AVAILABLE)
+  region              String        @default("")
+  created_at          DateTime      @default(now())
+  updated_at          DateTime      @updatedAt
+
+  trips            Trip[]
+  maintenance_logs MaintenanceLog[]
+  fuel_logs        FuelLog[]
+  expenses         Expense[]
+
+  @@index([status])
+  @@index([type])
+  @@index([region])
 }
 
 model Driver {
   id               String       @id @default(uuid())
-  user_id          String?      @unique
-  user             User?        @relation(fields: [user_id], references: [id])
   name             String
   license_number   String       @unique
   license_category String
   license_expiry   DateTime
+  contact_number   String       @default("")
   safety_score     Float        @default(100)
-  status           DriverStatus
-  Trips            Trip[]
-}
+  status           DriverStatus @default(AVAILABLE)
+  created_at       DateTime     @default(now())
+  updated_at       DateTime     @updatedAt
 
-model Vehicle {
-  id                  String            @id @default(uuid())
-  registration_number String            @unique
-  name_model          String
-  type                String
-  max_load_capacity   Float
-  odometer            Float
-  acquisition_cost    Float
-  status              VehicleStatus
-  Trips               Trip[]
-  MaintenanceLogs     MaintenanceLog[]
-  Expenses            Expense[]
+  trips Trip[]
+
+  @@index([status])
 }
 
 model Trip {
   id               String     @id @default(uuid())
+  trip_code        String     @unique @default(cuid())
   source           String
   destination      String
   vehicle_id       String
-  vehicle          Vehicle    @relation(fields: [vehicle_id], references: [id])
   driver_id        String
-  driver           Driver     @relation(fields: [driver_id], references: [id])
   cargo_weight     Float
   planned_distance Float
-  status           TripStatus
+  status           TripStatus @default(DRAFT)
+  final_odometer   Float?
+  fuel_consumed    Float?
+  revenue          Float?
+  eta              DateTime?
   created_at       DateTime   @default(now())
-  start_time       DateTime?
-  end_time         DateTime?
+  updated_at       DateTime   @updatedAt
+
+  vehicle  Vehicle   @relation(fields: [vehicle_id], references: [id])
+  driver   Driver    @relation(fields: [driver_id], references: [id])
+  fuel_logs FuelLog[]
+  expenses  Expense[]
+
+  @@index([status])
+  @@index([vehicle_id])
+  @@index([driver_id])
+  @@index([created_at])
 }
 
 model MaintenanceLog {
-  id          String            @id @default(uuid())
-  vehicle_id  String
-  vehicle     Vehicle           @relation(fields: [vehicle_id], references: [id])
-  description String
-  cost        Float
-  status      MaintenanceStatus
-  created_at  DateTime          @default(now())
-  closed_at   DateTime?
+  id           String            @id @default(uuid())
+  vehicle_id   String
+  service_type String
+  cost         Float
+  date         DateTime
+  status       MaintenanceStatus @default(ACTIVE)
+  notes        String            @default("")
+  created_at   DateTime          @default(now())
+  closed_at    DateTime?
+
+  vehicle Vehicle @relation(fields: [vehicle_id], references: [id])
+
+  @@index([vehicle_id])
+  @@index([status])
+}
+
+model FuelLog {
+  id         String   @id @default(uuid())
+  vehicle_id String
+  trip_id    String?
+  date       DateTime @default(now())
+  liters     Float
+  cost       Float
+  created_at DateTime @default(now())
+
+  vehicle Vehicle @relation(fields: [vehicle_id], references: [id])
+  trip    Trip?   @relation(fields: [trip_id], references: [id])
+
+  @@index([vehicle_id])
+  @@index([trip_id])
 }
 
 model Expense {
-  id         String      @id @default(uuid())
+  id         String   @id @default(uuid())
+  trip_id    String?
   vehicle_id String
-  vehicle    Vehicle     @relation(fields: [vehicle_id], references: [id])
-  type       ExpenseType
-  cost       Float
-  liters     Float?
-  date       DateTime    @default(now())
+  toll       Float    @default(0)
+  other      Float    @default(0)
+  category   String   @default("")
+  total      Float
+  date       DateTime @default(now())
+  created_at DateTime @default(now())
+
+  vehicle Vehicle @relation(fields: [vehicle_id], references: [id])
+  trip    Trip?   @relation(fields: [trip_id], references: [id])
+
+  @@index([vehicle_id])
+  @@index([trip_id])
+}
+
+model Setting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+
+  @@index([key])
 }
