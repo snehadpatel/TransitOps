@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-18.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![SQLite](https://img.shields.io/badge/SQLite-3.x-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-5.0-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
 
 ---
@@ -15,6 +15,41 @@
 **TransitOps is a centralized platform that replaces spreadsheets and manual logbooks, allowing organizations to manage the complete lifecycle of their transport operations—from vehicle registration and driver management to dispatching, maintenance, fuel logging, and analytics.**
 
 </div>
+
+## 🚀 Quick Start (Hackathon Setup)
+
+### Prerequisites
+- Node.js 18+ installed
+- No database install needed — uses **SQLite** (file-based, zero config)
+
+### 1. Backend Setup
+
+```bash
+cd backend
+npm install
+npx prisma migrate dev --name init
+node prisma/seed.js
+npm run dev   # Starts on http://localhost:5000
+```
+
+### 2. Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm run dev   # Starts on http://localhost:5173
+```
+
+### 3. Login Credentials (All passwords: `Password123`)
+
+| Email | Role | Access |
+|-------|------|--------|
+| `manager@transitops.com` | Fleet Manager | Vehicles, Maintenance, Settings |
+| `dispatcher@transitops.com` | Dispatcher | Trips, Fleet view |
+| `safety@transitops.com` | Safety Officer | Drivers, suspend/restore |
+| `analyst@transitops.com` | Financial Analyst | Expenses, Analytics, CSV export |
+
+---
 
 ## 🎯 Key Features
 
@@ -34,8 +69,8 @@
 - 🎯 **Real-time KPI Dashboard** - Live overview of Active Vehicles, Pending Trips, and Fleet Utilization (%).
 - 📈 **Performance Analytics** - Fuel Efficiency (Distance/Fuel) and Vehicle ROI calculations.
 - 📉 **Cost Tracking** - Automatically compute total operational cost (Fuel + Maintenance) per vehicle.
-- 📑 **Export Capabilities** - Support for CSV and optional PDF report exports.
-- 🎨 **Visual Filters** - Advanced filtering by vehicle type, status, and region.
+- 📑 **Export Capabilities** - CSV report export with real trip data.
+- 🔄 **Auto-refresh** - Dashboard updates every 30 seconds automatically.
 
 #### 🚚 Vehicle & Driver Management
 - 📦 **Master Vehicle Registry** - Centralized tracking of capacity, odometer, acquisition cost, and live status.
@@ -46,7 +81,8 @@
 #### 📋 Trip Management & Dispatch
 - ⚡ **Streamlined Dispatch Workflow** - Create trips mapping source to destination with load validation.
 - 🔄 **Trip Lifecycle Management** - Track statuses from Draft → Dispatched → Completed → Cancelled.
-- ⚖️ **Safety Validations** - Ensure cargo weight never exceeds a vehicle's maximum load capacity.
+- ⚖️ **Safety Validations** - Ensure cargo weight never exceeds a vehicle's maximum load capacity (enforced server-side).
+- ✅ **Complete/Cancel Trips** - Automatically restores vehicle and driver status to Available.
 
 #### 🔧 Maintenance & Expenses
 - 📅 **Automated Maintenance Logs** - Creating records instantly changes vehicle status to "In Shop", hiding it from dispatch.
@@ -54,8 +90,9 @@
 - ✅ **Lifecycle Recovery** - Closing maintenance instantly restores vehicles back to the Available fleet.
 
 #### 🔐 Security & Authentication
-- 🔑 **Secure Authentication** - Email and password login for all operational staff.
-- 🛡️ **Role-Based Access Control (RBAC)** - Tailored access for Fleet Managers, Drivers, Safety Officers, and Financial Analysts.
+- 🔑 **Secure JWT Authentication** - Real login with bcrypt password hashing and 5-attempt lockout.
+- 🛡️ **Role-Based Access Control (RBAC)** - Tailored access for Fleet Managers, Dispatchers, Safety Officers, and Financial Analysts.
+- 🔒 **Session Persistence** - JWT token stored in localStorage, session restored on page refresh.
 
 ---
 
@@ -67,22 +104,22 @@
 graph LR
     subgraph Frontend["🎨 FRONTEND LAYER"]
         A[React + Vite]
-        B[Vanilla CSS]
-        C[Context API]
+        B[TailwindCSS]
+        C[Context API + JWT]
     end
     
     subgraph Backend["🔙 BACKEND LAYER"]
         F[Express.js API]
-        G[Socket.io]
-        H[Zod Validation]
+        G[JWT Auth Middleware]
+        H[Zod Validation + RBAC]
     end
     
     subgraph Database["💾 DATA LAYER"]
-        K[PostgreSQL]
+        K[SQLite]
         L[Prisma ORM]
     end
     
-    Frontend -->|REST / WS| Backend
+    Frontend -->|REST API /api| Backend
     Backend -->|SQL Queries| Database
     
     style Frontend fill:#61DAFB,stroke:#0284c7,stroke-width:3px
@@ -91,9 +128,9 @@ graph LR
 ```
 
 **Architecture Flow:**
-- **Frontend Layer**: React SPA built with Vite, utilizing pure CSS/CSS Modules for a custom aesthetic and React Context for lightweight state management.
-- **Backend Layer**: Scalable Node.js + Express REST API featuring real-time Socket.io updates and robust Zod input validation.
-- **Data Layer**: Relational PostgreSQL database managed by Prisma ORM for type-safety and flawless database schema design.
+- **Frontend Layer**: React SPA built with Vite, utilizing TailwindCSS and React Context for JWT-based auth state.
+- **Backend Layer**: Scalable Node.js + Express REST API featuring JWT authentication, RBAC middleware, and Zod input validation.
+- **Data Layer**: SQLite database managed by Prisma ORM for type-safe, zero-config local database access.
 
 </div>
 
@@ -105,27 +142,43 @@ graph LR
 TransitOps/
 │
 ├── 📄 README.md                        # You are here!
-├── 📄 docs/ARCHITECTURE.md             # Architecture documentation
 │
 ├── 🔙 backend/                         # Node.js + Express API
 │   ├── 📦 package.json                 # Backend dependencies
+│   ├── 🔐 .env                         # Environment variables (not committed)
 │   │
 │   ├── 🗄️ prisma/                      # Database layer
-│   │   └── 📋 schema.prisma            # Strict database schema definition
+│   │   ├── 📋 schema.prisma            # SQLite database schema
+│   │   └── 🌱 seed.js                  # Seed script (4 users, 5 vehicles, 4 drivers)
 │   │
 │   └── 💻 src/                         # Source code
 │       ├── 🚀 server.js                # Application entry point
-│       ├── 🎮 controllers/             # Request handlers & Business Logic
-│       ├── 🛡️ middlewares/             # RBAC & Validation middleware
+│       ├── 🎮 controllers/             # Request handlers
+│       ├── 🛡️ middlewares/             # JWT auth, RBAC, validation
 │       ├── 🛣️ routes/                  # API endpoint definitions
-│       └── 🏢 services/                # Complex DB query abstraction
+│       └── 🏢 services/                # Business logic & DB queries
 │
 └── 🎨 frontend/                        # React + Vite Frontend
     ├── 📦 package.json                 # Frontend dependencies
     └── 💻 src/                         # Source code
-        ├── 🧩 components/              # Reusable UI components
-        ├── 📄 pages/                   # Application views (Dashboard, Vehicles)
-        ├── 🌐 context/                 # Global state (Auth, Roles)
-        ├── 📡 services/                # API communication layers
-        └── 🛠️ utils/                   # Helper functions (Formatting, Math)
+        ├── 🧩 components/              # Layout, ProtectedRoute
+        ├── 📄 pages/                   # Dashboard, Fleet, Drivers, Trips, etc.
+        ├── 🌐 context/                 # AuthContext (JWT + session restore)
+        └── 📡 services/                # api.ts (fetch wrapper with JWT headers)
 ```
+
+---
+
+## 🛡️ Business Rules Enforced (Server-Side)
+
+| Rule | Where Enforced |
+|------|---------------|
+| Registration numbers must be unique | DB unique constraint |
+| Retired/In Shop vehicles hidden from dispatch | `GET /vehicles/available` filter |
+| Suspended drivers blocked from dispatch | `GET /drivers/available` filter |
+| Expired license → blocked from dispatch | `dispatchTrip()` service validation |
+| Cargo weight > vehicle capacity → blocked | `dispatchTrip()` service validation |
+| Dispatch atomically sets Vehicle + Driver → ON_TRIP | Prisma `$transaction()` |
+| Complete trip atomically restores Vehicle + Driver → AVAILABLE | Prisma `$transaction()` |
+| Maintenance log → Vehicle → IN_SHOP (atomic) | Prisma `$transaction()` |
+| 5 failed login attempts → 15-minute lockout | `authService.login()` |
