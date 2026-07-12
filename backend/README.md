@@ -70,7 +70,7 @@ backend/
 
 ## API
 
-See [`documents/api-reference.md`](../documents/api-reference.md) for the full endpoint reference.
+See [`docs/api-reference.md`](../docs/api-reference.md) for the full endpoint reference.
 
 **Base URL:** `http://localhost:5001/api`
 

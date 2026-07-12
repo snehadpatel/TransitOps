@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-18.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![SQLite](https://img.shields.io/badge/SQLite-3.x-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.x-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-5.0-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
 
 ---
@@ -20,16 +20,18 @@
 
 ### Prerequisites
 - Node.js 18+ installed
-- No database install needed — uses **SQLite** (file-based, zero config)
+- PostgreSQL database server running locally
 
 ### 1. Backend Setup
+
+Configure your database connection in `backend/.env` (see `backend/.env.example`). Then run:
 
 ```bash
 cd backend
 npm install
-npx prisma migrate dev --name init
+npx prisma db push --force-reset
 node prisma/seed.js
-npm run dev   # Starts on http://localhost:5000
+npm start     # Starts on http://localhost:5001
 ```
 
 ### 2. Frontend Setup
@@ -115,7 +117,7 @@ graph LR
     end
     
     subgraph Database["💾 DATA LAYER"]
-        K[SQLite]
+        K[PostgreSQL]
         L[Prisma ORM]
     end
     
@@ -130,7 +132,7 @@ graph LR
 **Architecture Flow:**
 - **Frontend Layer**: React SPA built with Vite, utilizing TailwindCSS and React Context for JWT-based auth state.
 - **Backend Layer**: Scalable Node.js + Express REST API featuring JWT authentication, RBAC middleware, and Zod input validation.
-- **Data Layer**: SQLite database managed by Prisma ORM for type-safe, zero-config local database access.
+- **Data Layer**: PostgreSQL database managed by Prisma ORM for type-safe, relational data storage.
 
 </div>
 
@@ -143,12 +145,18 @@ TransitOps/
 │
 ├── 📄 README.md                        # You are here!
 │
+├── 📂 docs/                            # Unified Platform Documentation
+│   ├── 📄 ARCHITECTURE.md              # Tech stack & database decisions
+│   ├── 📄 api-reference.md             # API schema & endpoints reference
+│   ├── 📄 decisions.md                 # Validation rule checklists & design decisions
+│   └── 📄 er-diagram.md                # Entity Relationship diagram
+│
 ├── 🔙 backend/                         # Node.js + Express API
 │   ├── 📦 package.json                 # Backend dependencies
 │   ├── 🔐 .env                         # Environment variables (not committed)
 │   │
 │   ├── 🗄️ prisma/                      # Database layer
-│   │   ├── 📋 schema.prisma            # SQLite database schema
+│   │   ├── 📋 schema.prisma            # Prisma database schema
 │   │   └── 🌱 seed.js                  # Seed script (4 users, 5 vehicles, 4 drivers)
 │   │
 │   └── 💻 src/                         # Source code
