@@ -10,14 +10,8 @@ const DEMO_CREDENTIALS = [
 ];
 
 const Login: React.FC = () => {
-<<<<<<< HEAD
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-=======
-  const [email, setEmail] = useState('manager@transitops.com');
-  const [password, setPassword] = useState('Password123');
-  const [role, setRole] = useState<Role | ''>('Fleet Manager');
->>>>>>> e70186fb3921f02c96fa62200c1097ee3244eb92
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
