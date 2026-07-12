@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Fleet from './pages/Fleet';
+import Drivers from './pages/Drivers';
 
 function App() {
   return (
@@ -27,6 +28,14 @@ function App() {
             <ProtectedRoute allowedRoles={['Fleet Manager', 'Dispatcher', 'Financial Analyst']}>
               <Layout>
                 <Fleet />
+              </Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/drivers" element={
+            <ProtectedRoute allowedRoles={['Fleet Manager', 'Dispatcher', 'Safety Officer']}>
+              <Layout>
+                <Drivers />
               </Layout>
             </ProtectedRoute>
           } />
