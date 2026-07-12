@@ -170,14 +170,14 @@ const Fleet: React.FC = () => {
               type="text"
               placeholder="Search Registration / Model..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               className="form-control"
               style={{ maxWidth: '320px' }}
             />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <label className="form-label" style={{ margin: 0, whiteSpace: 'nowrap' }}>Type</label>
-            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="form-select" style={{ width: 'auto', minWidth: '100px' }}>
+            <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }} className="form-select" style={{ width: 'auto', minWidth: '100px' }}>
               <option value="">All</option>
               <option value="VAN">Van</option>
               <option value="TRUCK">Truck</option>
@@ -187,7 +187,7 @@ const Fleet: React.FC = () => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <label className="form-label" style={{ margin: 0, whiteSpace: 'nowrap' }}>Status</label>
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="form-select" style={{ width: 'auto', minWidth: '120px' }}>
+            <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="form-select" style={{ width: 'auto', minWidth: '120px' }}>
               <option value="">All</option>
               <option value="AVAILABLE">Available</option>
               <option value="ON_TRIP">On Trip</option>
@@ -195,6 +195,7 @@ const Fleet: React.FC = () => {
               <option value="RETIRED">Retired</option>
             </select>
           </div>
+          <span style={{ marginLeft: 'auto', fontSize: '0.85rem', color: 'var(--tx-text-muted)' }}>{total} vehicles</span>
         </div>
       </div>
 
@@ -258,6 +259,17 @@ const Fleet: React.FC = () => {
         <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i>
         Registration No. must be unique. Retired/In Shop vehicles are hidden from Trip Dispatcher.
       </p>
+
+      {total > pageSize && (
+        <Pagination
+          currentPage={page}
+          totalPages={Math.ceil(total / pageSize)}
+          totalRecords={total}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+        />
+      )}
 
       {/* Add Vehicle Modal */}
       {showAddModal && (

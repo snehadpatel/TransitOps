@@ -51,11 +51,15 @@ const Drivers: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [form, setForm] = useState(EMPTY_DRIVER);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [total, setTotal] = useState(0);
 
   const fetchDrivers = useCallback(async () => {
     setLoading(true);
@@ -63,14 +67,18 @@ const Drivers: React.FC = () => {
     try {
       const params = new URLSearchParams();
       if (search) params.set('search', search);
+      if (statusFilter) params.set('status', statusFilter);
+      params.set('page', page.toString());
+      params.set('limit', pageSize.toString());
       const res = await api.get<ApiResponse>(`/drivers?${params.toString()}`);
       setDrivers(res.data);
+      setTotal(res.meta?.total ?? res.data.length);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load drivers.');
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, statusFilter, page, pageSize]);
 
   useEffect(() => {
     fetchDrivers();
@@ -140,15 +148,22 @@ const Drivers: React.FC = () => {
       {/* Filter Bar */}
       <div className="tx-table-wrap" style={{ marginBottom: '20px' }}>
         <div className="tx-table-toolbar">
-          <div style={{ flex: 1, maxWidth: '320px' }}>
-            <input
-              type="text"
-              placeholder="Search name or license..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="form-control"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Search name or license..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className="form-control"
+            style={{ maxWidth: '300px' }}
+          />
+          <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="form-select" style={{ width: 'auto' }}>
+            <option value="">All Status</option>
+            <option value="AVAILABLE">Available</option>
+            <option value="ON_TRIP">On Trip</option>
+            <option value="OFF_DUTY">Off Duty</option>
+            <option value="SUSPENDED">Suspended</option>
+          </select>
+          <span style={{ marginLeft: 'auto', fontSize: '0.85rem', color: 'var(--tx-text-muted)' }}>{total} drivers</span>
         </div>
       </div>
 
@@ -234,6 +249,17 @@ const Drivers: React.FC = () => {
         <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i>
         Expired license or Suspended status = blocked from trip assignment.
       </p>
+
+      {total > pageSize && (
+        <Pagination
+          currentPage={page}
+          totalPages={Math.ceil(total / pageSize)}
+          totalRecords={total}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+        />
+      )}
 
       {/* Add Driver Modal */}
       {showAddModal && (
