@@ -92,33 +92,12 @@ async function getMe(userId) {
   return user;
 }
 
-async function register(name, email, password, role) {
-  const existingUser = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
-  if (existingUser) {
-    throw new AppError('Email is already in use.', 409, 'EMAIL_IN_USE');
-  }
-  
-  const password_hash = await bcrypt.hash(password, 12);
-  const user = await prisma.user.create({
-    data: {
-      name,
-      email: email.toLowerCase(),
-      password_hash,
-      role
-    }
-  });
-
-  const token = signToken({ id: user.id, role: user.role });
-
-  return {
-    token,
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    }
-  };
+async function register() {
+  throw new AppError(
+    'Public registration is disabled. Use administrator-provisioned accounts.',
+    403,
+    'REGISTRATION_DISABLED'
+  );
 }
 
 module.exports = { login, getMe, register };

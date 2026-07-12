@@ -43,7 +43,7 @@ router.delete('/:id', requireRole('FLEET_MANAGER'), ctrl.deleteVehicle);
 const upload = require('../middlewares/upload');
 
 // Document Management
-router.get('/:id/documents', ctrl.getDocuments);
+router.get('/:id/documents', requireRole('FLEET_MANAGER', 'FINANCIAL_ANALYST'), ctrl.getDocuments);
 router.post('/:id/documents', requireRole('FLEET_MANAGER'), upload.single('document'), ctrl.uploadDocument);
 
 module.exports = router;
