@@ -2,6 +2,8 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth, Role } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import NotificationDropdown from './NotificationDropdown';
+import GlobalSearch from './GlobalSearch';
 
 interface LayoutProps {
   children: React.ReactNode;
