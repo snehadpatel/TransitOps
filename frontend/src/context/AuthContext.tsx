@@ -13,6 +13,7 @@ interface AuthContextType {
   user: User | null;
   login: (token: string, userData: User) => void;
   logout: () => void;
+  register?: (name: string, email: string, password: string, role: string) => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -31,8 +32,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
+  const register = async (name: string, email: string, password: string, role: string) => {
+    const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+    const res = await fetch(`${VITE_API_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, role })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to register');
+    
+    // Auto login
+    login(data.token, data.user);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, register, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

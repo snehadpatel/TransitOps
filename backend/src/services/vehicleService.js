@@ -65,6 +65,21 @@ async function deleteVehicle(id) {
   return prisma.vehicle.update({ where: { id }, data: { status: 'RETIRED' } });
 }
 
+async function getDocuments(vehicleId) {
+  return prisma.document.findMany({ where: { vehicle_id: vehicleId }, orderBy: { uploaded_at: 'desc' } });
+}
+
+async function addDocument(vehicleId, url, name) {
+  await getVehicleById(vehicleId); // ensure vehicle exists
+  return prisma.document.create({
+    data: {
+      vehicle_id: vehicleId,
+      url,
+      name,
+    }
+  });
+}
+
 module.exports = {
   listVehicles,
   getAvailableVehicles,
@@ -72,4 +87,6 @@ module.exports = {
   createVehicle,
   updateVehicle,
   deleteVehicle,
+  getDocuments,
+  addDocument,
 };

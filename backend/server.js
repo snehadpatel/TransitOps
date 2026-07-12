@@ -5,7 +5,11 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
+const http = require('http');
+const { Server } = require('socket.io');
+const path = require('path');
 const { errorHandler } = require('./src/middlewares/errorHandler');
+const { startCronJobs } = require('./src/jobs/licenseCron');
 
 // Route imports
 const authRoutes = require('./src/routes/auth');
@@ -18,13 +22,22 @@ const analyticsRoutes = require('./src/routes/analytics');
 const settingsRoutes = require('./src/routes/settings');
 
 const app = express();
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, {
+  cors: { origin: process.env.CORS_ORIGIN || 'http://localhost:5173', credentials: true }
+});
+// Attach io to the app so routes can use it
+app.set('io', io);
+
 const PORT = process.env.PORT || 5000;
 
 // ─── Global Middleware ────────────────────────────────────────────────────────
 
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: false })); // allow images to be loaded cross-origin
 app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173', credentials: true }));
 app.use(express.json());
+// Serve static uploads folder
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // Rate limiter — auth routes are stricter
@@ -61,7 +74,10 @@ app.use(errorHandler);
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 
-app.listen(PORT, () => {
+// Start scheduled jobs
+startCronJobs();
+
+httpServer.listen(PORT, () => {
   console.log(`🚌 TransitOps API running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
 });
 

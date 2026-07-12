@@ -1,5 +1,7 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const Analytics: React.FC = () => {
   const revenueData = [
@@ -17,14 +19,45 @@ const Analytics: React.FC = () => {
     { name: 'VAN-01', cost: 4650 },
   ];
 
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    doc.text('TransitOps Analytics Report', 14, 20);
+    
+    autoTable(doc, {
+      startY: 30,
+      head: [['Metric', 'Value']],
+      body: [
+        ['Fuel Efficiency (Dist/Fuel)', '8.4 km/l'],
+        ['Fleet Utilization', '87%'],
+        ['Operational Cost', '₹34,000'],
+        ['Vehicle ROI', '14.2%']
+      ],
+    });
+
+    doc.text('Top Costliest Vehicles', 14, doc.lastAutoTable.finalY + 15);
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 20,
+      head: [['Vehicle', 'Cost']],
+      body: costData.map(c => [c.name, `₹${c.cost}`]),
+    });
+
+    doc.save('transitops-analytics.pdf');
+  };
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto animate-in">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Reports & Analytics</h2>
-        <button className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-md font-medium text-sm flex items-center transition-colors">
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-          Export CSV
-        </button>
+        <h2 className="text-2xl font-bold text-gray-800 page-title">Reports & Analytics</h2>
+        <div className="flex gap-2">
+          <button className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-md font-medium text-sm flex items-center transition-colors">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            Export CSV
+          </button>
+          <button onClick={generatePDF} className="bg-amber-500 border border-amber-600 text-white hover:bg-amber-600 px-4 py-2 rounded-md font-medium text-sm flex items-center transition-colors">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            Download PDF
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -1,53 +1,10 @@
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
-}
-
-// ─── Enums ───────────────────────────────────────────────────────────────────
-
-enum Role {
-  FLEET_MANAGER
-  DISPATCHER
-  SAFETY_OFFICER
-  FINANCIAL_ANALYST
-}
-
-enum DriverStatus {
-  AVAILABLE
-  ON_TRIP
-  OFF_DUTY
-  SUSPENDED
-}
-
-enum VehicleStatus {
-  AVAILABLE
-  ON_TRIP
-  IN_SHOP
-  RETIRED
-}
-
-enum VehicleType {
-  VAN
-  TRUCK
-  BUS
-  MOTORCYCLE
-  OTHER
-}
-
-enum TripStatus {
-  DRAFT
-  DISPATCHED
-  COMPLETED
-  CANCELLED
-}
-
-enum MaintenanceStatus {
-  ACTIVE
-  CLOSED
 }
 
 // ─── Models ──────────────────────────────────────────────────────────────────
@@ -57,7 +14,7 @@ model User {
   name            String
   email           String    @unique
   password_hash   String
-  role            Role
+  role            String
   failed_attempts Int       @default(0)
   locked_until    DateTime?
   created_at      DateTime  @default(now())
@@ -68,11 +25,11 @@ model Vehicle {
   id                  String          @id @default(uuid())
   registration_number String          @unique
   name_model          String
-  type                VehicleType     @default(OTHER)
+  type                String          @default("OTHER")
   max_load_capacity   Float           // kg
   odometer            Float           @default(0) // km
   acquisition_cost    Float
-  status              VehicleStatus   @default(AVAILABLE)
+  status              String          @default("AVAILABLE")
   region              String?
   created_at          DateTime        @default(now())
   updated_at          DateTime        @updatedAt
@@ -81,6 +38,7 @@ model Vehicle {
   maintenance_logs    MaintenanceLog[]
   fuel_logs           FuelLog[]
   expenses            Expense[]
+  documents           Document[]
 
   @@index([status])
   @@index([type])
@@ -96,7 +54,7 @@ model Driver {
   contact_number    String?
   safety_score      Float        @default(100)
   trip_completions  Int          @default(0)  // count of COMPLETED trips
-  status            DriverStatus @default(AVAILABLE)
+  status            String       @default("AVAILABLE")
   created_at        DateTime     @default(now())
   updated_at        DateTime     @updatedAt
 
@@ -116,7 +74,7 @@ model Trip {
   driver           Driver     @relation(fields: [driver_id], references: [id])
   cargo_weight     Float      // kg
   planned_distance Float      // km
-  status           TripStatus @default(DRAFT)
+  status           String     @default("DRAFT")
   eta              DateTime?
   final_odometer   Float?     // km — set on completion
   fuel_consumed    Float?     // liters — set on completion
@@ -141,7 +99,7 @@ model MaintenanceLog {
   service_type String
   cost         Float
   date         DateTime          @default(now())
-  status       MaintenanceStatus @default(ACTIVE)
+  status       String            @default("ACTIVE")
   notes        String?
   closed_at    DateTime?
   created_at   DateTime          @default(now())
@@ -190,4 +148,15 @@ model Setting {
   currency      String   @default("INR")
   distance_unit String   @default("km")
   updated_at    DateTime @updatedAt
+}
+
+model Document {
+  id         String   @id @default(uuid())
+  vehicle_id String
+  vehicle    Vehicle  @relation(fields: [vehicle_id], references: [id])
+  url        String
+  name       String
+  uploaded_at DateTime @default(now())
+
+  @@index([vehicle_id])
 }

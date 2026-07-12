@@ -19,4 +19,14 @@ async function getMe(req, res, next) {
   }
 }
 
-module.exports = { login, getMe };
+async function register(req, res, next) {
+  try {
+    const { name, email, password, role } = req.body;
+    const result = await authService.register(name, email, password, role);
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { login, getMe, register };

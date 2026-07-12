@@ -11,13 +11,19 @@ async function getMaintenance(req, res, next) {
 }
 
 async function createMaintenance(req, res, next) {
-  try { res.status(201).json(await maintenanceService.createMaintenance(req.body)); }
-  catch (err) { next(err); }
+  try {
+    const log = await maintenanceService.createMaintenance(req.body);
+    req.app.get('io').emit('vehicle-updated');
+    res.status(201).json(log);
+  } catch (err) { next(err); }
 }
 
 async function closeMaintenance(req, res, next) {
-  try { res.json(await maintenanceService.closeMaintenance(req.params.id)); }
-  catch (err) { next(err); }
+  try {
+    const log = await maintenanceService.closeMaintenance(req.params.id);
+    req.app.get('io').emit('vehicle-updated');
+    res.json(log);
+  } catch (err) { next(err); }
 }
 
 module.exports = { listMaintenance, getMaintenance, createMaintenance, closeMaintenance };

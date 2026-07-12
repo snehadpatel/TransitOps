@@ -1,10 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getSocket } from '../services/socket';
 
 const Trips: React.FC = () => {
   const [cargoWeight, setCargoWeight] = useState('');
   const [vehicle, setVehicle] = useState('');
   const capacity = vehicle === 'VAN-01' ? 500 : (vehicle === 'TRK-02' ? 2000 : 0);
   const cargoExceeded = vehicle && cargoWeight && Number(cargoWeight) > capacity;
+
+  useEffect(() => {
+    const socket = getSocket();
+    
+    const handleUpdate = () => {
+      console.log('Real-time update received! Re-fetching trips and vehicles...');
+      // In a real implementation, this would trigger a re-fetch of the live board
+    };
+
+    socket.on('trip-updated', handleUpdate);
+    socket.on('vehicle-updated', handleUpdate);
+
+    return () => {
+      socket.off('trip-updated', handleUpdate);
+      socket.off('vehicle-updated', handleUpdate);
+    };
+  }, []);
 
   const mockLiveBoard = [
     { id: 'TR001', route: 'Gandhinagar Depot -> Ahmedabad Hub', vehicle: 'VAN-01', driver: 'Alex', status: 'On Trip', eta: '45 min' },

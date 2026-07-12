@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth, Role } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -30,6 +31,7 @@ const getNavItems = (role: Role) => {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   if (!user) return <>{children}</>;
@@ -76,25 +78,30 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <p className="text-sm font-medium">{user.name}</p>
               <p className="text-xs text-gray-500">{user.role}</p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="text-xs px-3 py-1 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 transition-colors"
-            >
-              Sign out
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={toggleTheme} className="text-xl" title="Toggle Dark Mode">
+                {isDark ? '🌙' : '☀️'}
+              </button>
+              <button
+                onClick={handleLogout}
+                className="text-xs px-3 py-1 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 transition-colors"
+              >
+                Sign out
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className={`flex-1 flex flex-col overflow-hidden ${isDark ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
         {/* Top Header */}
-        <header className="h-16 bg-white border-b flex items-center px-8 shadow-sm z-10">
+        <header className={`h-16 border-b flex items-center px-8 shadow-sm z-10 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
           <div className="flex-1">
             <input
               type="text"
               placeholder="Search..."
-              className="w-96 px-4 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
+              className={`w-96 px-4 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-amber-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'}`}
             />
           </div>
           <div className="flex items-center space-x-4">
@@ -106,7 +113,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto bg-gray-50 p-8">
+        <main className={`flex-1 overflow-auto p-8 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
           {children}
         </main>
       </div>

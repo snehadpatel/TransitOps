@@ -11,23 +11,38 @@ async function getTrip(req, res, next) {
 }
 
 async function createTrip(req, res, next) {
-  try { res.status(201).json(await tripService.createTrip(req.body)); }
-  catch (err) { next(err); }
+  try { 
+    const trip = await tripService.createTrip(req.body);
+    req.app.get('io').emit('trip-updated');
+    res.status(201).json(trip);
+  } catch (err) { next(err); }
 }
 
 async function dispatchTrip(req, res, next) {
-  try { res.json(await tripService.dispatchTrip(req.params.id)); }
-  catch (err) { next(err); }
+  try {
+    const trip = await tripService.dispatchTrip(req.params.id);
+    req.app.get('io').emit('trip-updated');
+    req.app.get('io').emit('vehicle-updated');
+    res.json(trip);
+  } catch (err) { next(err); }
 }
 
 async function completeTrip(req, res, next) {
-  try { res.json(await tripService.completeTrip(req.params.id, req.body)); }
-  catch (err) { next(err); }
+  try {
+    const trip = await tripService.completeTrip(req.params.id, req.body);
+    req.app.get('io').emit('trip-updated');
+    req.app.get('io').emit('vehicle-updated');
+    res.json(trip);
+  } catch (err) { next(err); }
 }
 
 async function cancelTrip(req, res, next) {
-  try { res.json(await tripService.cancelTrip(req.params.id)); }
-  catch (err) { next(err); }
+  try {
+    const trip = await tripService.cancelTrip(req.params.id);
+    req.app.get('io').emit('trip-updated');
+    req.app.get('io').emit('vehicle-updated');
+    res.json(trip);
+  } catch (err) { next(err); }
 }
 
 module.exports = { listTrips, getTrip, createTrip, dispatchTrip, completeTrip, cancelTrip };

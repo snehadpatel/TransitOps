@@ -40,4 +40,10 @@ router.post('/', requireRole('FLEET_MANAGER'), validate(vehicleSchema), ctrl.cre
 router.patch('/:id', requireRole('FLEET_MANAGER'), validate(vehicleUpdateSchema), ctrl.updateVehicle);
 router.delete('/:id', requireRole('FLEET_MANAGER'), ctrl.deleteVehicle);
 
+const upload = require('../middlewares/upload');
+
+// Document Management
+router.get('/:id/documents', ctrl.getDocuments);
+router.post('/:id/documents', requireRole('FLEET_MANAGER'), upload.single('document'), ctrl.uploadDocument);
+
 module.exports = router;

@@ -1,6 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { getSocket } from '../services/socket';
 
 const Dashboard: React.FC = () => {
+  useEffect(() => {
+    const socket = getSocket();
+    
+    const handleUpdate = () => {
+      console.log('Real-time update received! Re-fetching dashboard data...');
+      // In a real implementation, this would trigger a re-fetch of KPI and trips data
+    };
+
+    socket.on('trip-updated', handleUpdate);
+    socket.on('vehicle-updated', handleUpdate);
+
+    return () => {
+      socket.off('trip-updated', handleUpdate);
+      socket.off('vehicle-updated', handleUpdate);
+    };
+  }, []);
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Filter Bar */}
