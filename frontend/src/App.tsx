@@ -10,6 +10,7 @@ import Fleet from './pages/Fleet';
 import Drivers from './pages/Drivers';
 import Trips from './pages/Trips';
 import Maintenance from './pages/Maintenance';
+import Expenses from './pages/Expenses';
 
 function App() {
   return (
@@ -30,6 +31,14 @@ function App() {
             <ProtectedRoute allowedRoles={['Fleet Manager', 'Dispatcher', 'Financial Analyst']}>
               <Layout>
                 <Fleet />
+              </Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/expenses" element={
+            <ProtectedRoute allowedRoles={['Financial Analyst']}>
+              <Layout>
+                <Expenses />
               </Layout>
             </ProtectedRoute>
           } />
