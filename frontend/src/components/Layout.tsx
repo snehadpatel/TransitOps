@@ -22,6 +22,10 @@ const getNavItems = (role: Role): NavItem[] => {
     items.push({ name: 'Fleet', path: '/fleet', icon: 'fa-truck' });
     items.push({ name: 'Drivers', path: '/drivers', icon: 'fa-id-card' });
     items.push({ name: 'Maintenance', path: '/maintenance', icon: 'fa-screwdriver-wrench' });
+    items.push({ name: 'Reports', path: '/reports', icon: 'fa-chart-column' });
+    items.push({ name: 'Analytics', path: '/analytics', icon: 'fa-chart-line' });
+    items.push({ name: 'Users', path: '/users', icon: 'fa-users-gear' });
+    items.push({ name: 'Audit Logs', path: '/audit-logs', icon: 'fa-clipboard-list' });
     items.push({ name: 'Settings', path: '/settings', icon: 'fa-gear' });
   } else if (role === 'Dispatcher') {
     items.push({ name: 'Drivers', path: '/drivers', icon: 'fa-id-card' });
@@ -32,6 +36,7 @@ const getNavItems = (role: Role): NavItem[] => {
   } else if (role === 'Financial Analyst') {
     items.push({ name: 'Fleet', path: '/fleet', icon: 'fa-truck' });
     items.push({ name: 'Fuel & Expenses', path: '/expenses', icon: 'fa-gas-pump' });
+    items.push({ name: 'Reports', path: '/reports', icon: 'fa-chart-column' });
     items.push({ name: 'Analytics', path: '/analytics', icon: 'fa-chart-line' });
   }
   return items;
