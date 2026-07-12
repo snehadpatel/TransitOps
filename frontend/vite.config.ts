@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     port: 5173,
-    allowedHosts: ['transitops-ui-demo.loca.lt'],
+    allowedHosts: ['silver-walls-itch.loca.lt'],
     proxy: {
       '/api': { target: 'http://localhost:5001', changeOrigin: true },
     },
