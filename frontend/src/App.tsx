@@ -5,7 +5,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 import Login from './pages/Login';
-import Signup from './pages/Signup';
+
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Fleet from './pages/Fleet';
@@ -23,7 +23,7 @@ function App() {
         <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+
           
           <Route path="/" element={
             <ProtectedRoute>
