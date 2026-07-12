@@ -27,10 +27,10 @@ const listQuerySchema = z.object({
   search: z.string().optional(),
 });
 
-// All authenticated roles can view
-router.get('/', validateQuery(listQuerySchema), ctrl.listDrivers);
-router.get('/available', ctrl.getAvailableDrivers);
-router.get('/:id', ctrl.getDriver);
+// Authorized roles can view (Financial Analyst excluded)
+router.get('/', requireRole('FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER'), validateQuery(listQuerySchema), ctrl.listDrivers);
+router.get('/available', requireRole('FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER'), ctrl.getAvailableDrivers);
+router.get('/:id', requireRole('FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER'), ctrl.getDriver);
 
 // Only Safety Officer can create/update/delete
 router.post('/', requireRole('SAFETY_OFFICER'), validate(driverSchema), ctrl.createDriver);

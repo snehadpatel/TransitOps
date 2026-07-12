@@ -30,10 +30,10 @@ const listQuerySchema = z.object({
   search: z.string().optional(),
 });
 
-// All authenticated roles can list/view vehicles
-router.get('/', validateQuery(listQuerySchema), ctrl.listVehicles);
-router.get('/available', ctrl.getAvailableVehicles);
-router.get('/:id', ctrl.getVehicle);
+// Authorized roles can view (Dispatcher and Safety Officer excluded from general registry)
+router.get('/', requireRole('FLEET_MANAGER', 'FINANCIAL_ANALYST'), validateQuery(listQuerySchema), ctrl.listVehicles);
+router.get('/available', requireRole('FLEET_MANAGER', 'FINANCIAL_ANALYST', 'DISPATCHER'), ctrl.getAvailableVehicles);
+router.get('/:id', requireRole('FLEET_MANAGER', 'FINANCIAL_ANALYST'), ctrl.getVehicle);
 
 // Only Fleet Manager can create/update/delete
 router.post('/', requireRole('FLEET_MANAGER'), validate(vehicleSchema), ctrl.createVehicle);

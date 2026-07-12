@@ -32,16 +32,16 @@ const listQuerySchema = z.object({
   search: z.string().optional(),
 });
 
-// Dispatcher and Safety Officer can view trips; Fleet Manager cannot
+// Dispatcher, Safety Officer, and Fleet Manager can view trips (Financial Analyst excluded)
 router.get(
   '/',
-  requireRole('DISPATCHER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST', 'FLEET_MANAGER'),
+  requireRole('DISPATCHER', 'SAFETY_OFFICER', 'FLEET_MANAGER'),
   validateQuery(listQuerySchema),
   ctrl.listTrips
 );
 router.get(
   '/:id',
-  requireRole('DISPATCHER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST', 'FLEET_MANAGER'),
+  requireRole('DISPATCHER', 'SAFETY_OFFICER', 'FLEET_MANAGER'),
   ctrl.getTrip
 );
 

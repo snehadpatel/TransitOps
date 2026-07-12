@@ -9,15 +9,15 @@ router.use(authenticate);
 // Dashboard accessible by all roles
 router.get('/dashboard', ctrl.getDashboard);
 
-// Reports: Financial Analyst + Fleet Manager view
+// Reports: Financial Analyst view only
 router.get(
   '/reports',
-  requireRole('FINANCIAL_ANALYST', 'FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER'),
+  requireRole('FINANCIAL_ANALYST'),
   ctrl.getReports
 );
 router.get(
   '/reports/export',
-  requireRole('FINANCIAL_ANALYST', 'FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER'),
+  requireRole('FINANCIAL_ANALYST'),
   ctrl.exportCSV
 );
 

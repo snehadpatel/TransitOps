@@ -26,7 +26,7 @@ const listQuerySchema = z.object({
   trip_id: z.string().optional(),
 });
 
-router.get('/fuel', validateQuery(listQuerySchema), fuelCtrl.listFuelLogs);
+router.get('/fuel', requireRole('FINANCIAL_ANALYST'), validateQuery(listQuerySchema), fuelCtrl.listFuelLogs);
 router.post('/fuel', requireRole('FINANCIAL_ANALYST'), validate(fuelLogSchema), fuelCtrl.createFuelLog);
 router.patch('/fuel/:id', requireRole('FINANCIAL_ANALYST'), validate(fuelLogSchema.partial()), fuelCtrl.updateFuelLog);
 router.delete('/fuel/:id', requireRole('FINANCIAL_ANALYST'), fuelCtrl.deleteFuelLog);
@@ -43,7 +43,7 @@ const expenseSchema = z.object({
   notes: z.string().optional(),
 });
 
-router.get('/expenses', validateQuery(listQuerySchema), expenseCtrl.listExpenses);
+router.get('/expenses', requireRole('FINANCIAL_ANALYST'), validateQuery(listQuerySchema), expenseCtrl.listExpenses);
 router.post('/expenses', requireRole('FINANCIAL_ANALYST'), validate(expenseSchema), expenseCtrl.createExpense);
 router.patch('/expenses/:id', requireRole('FINANCIAL_ANALYST'), validate(expenseSchema.partial()), expenseCtrl.updateExpense);
 router.delete('/expenses/:id', requireRole('FINANCIAL_ANALYST'), expenseCtrl.deleteExpense);
