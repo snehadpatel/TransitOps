@@ -1,47 +1,46 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, Role } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
+
+const DEMO_CREDENTIALS = [
+  { role: 'Fleet Manager', email: 'manager@transitops.com' },
+  { role: 'Dispatcher', email: 'dispatcher@transitops.com' },
+  { role: 'Safety Officer', email: 'safety@transitops.com' },
+  { role: 'Financial Analyst', email: 'analyst@transitops.com' },
+];
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<Role | ''>('');
   const [error, setError] = useState('');
-  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (failedAttempts >= 5) {
-      setError('Account locked due to too many failed attempts.');
-      return;
-    }
+    setError('');
 
-    if (!email || !password || !role) {
+    if (!email || !password) {
       setError('Please fill in all fields.');
       return;
     }
 
-    // Mock login for now
-    if (email === 'test@example.com' && password === 'password') {
-      login('mock-jwt-token', {
-        id: '1',
-        name: 'Test User',
-        email,
-        role: role as Role,
-      });
+    setLoading(true);
+    try {
+      await login(email, password);
       navigate('/');
-    } else {
-      const newAttempts = failedAttempts + 1;
-      setFailedAttempts(newAttempts);
-      if (newAttempts >= 5) {
-        setError('Account locked due to too many failed attempts.');
-      } else {
-        setError('Invalid credentials.');
-      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Login failed.';
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleDemoLogin = (demoEmail: string) => {
+    setEmail(demoEmail);
+    setPassword('Password123');
   };
 
   return (
@@ -51,7 +50,7 @@ const Login: React.FC = () => {
         <h1 className="text-4xl font-bold mb-2 text-amber-500">TransitOps</h1>
         <p className="text-gray-400 mb-12">Smart Transport Operations Platform</p>
         
-        <div className="space-y-4">
+        <div className="space-y-4 mb-10">
           <p className="font-semibold text-lg">One login, four roles:</p>
           <ul className="space-y-2 text-gray-300">
             <li className="flex items-center"><span className="w-2 h-2 bg-amber-500 rounded-full mr-3"></span>Fleet Manager</li>
@@ -59,6 +58,24 @@ const Login: React.FC = () => {
             <li className="flex items-center"><span className="w-2 h-2 bg-amber-500 rounded-full mr-3"></span>Safety Officer</li>
             <li className="flex items-center"><span className="w-2 h-2 bg-amber-500 rounded-full mr-3"></span>Financial Analyst</li>
           </ul>
+        </div>
+
+        {/* Demo Credentials */}
+        <div className="mt-4">
+          <p className="text-xs text-gray-500 uppercase tracking-widest mb-3">Quick Demo Login</p>
+          <div className="space-y-2">
+            {DEMO_CREDENTIALS.map((c) => (
+              <button
+                key={c.email}
+                onClick={() => handleDemoLogin(c.email)}
+                className="w-full text-left px-3 py-2 rounded bg-white/5 hover:bg-white/10 text-sm text-gray-300 transition-colors border border-white/10"
+              >
+                <span className="text-amber-400 font-medium">{c.role}</span>
+                <span className="text-gray-500 text-xs block">{c.email}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-gray-600 mt-2">All passwords: <span className="text-gray-400">Password123</span></p>
         </div>
       </div>
 
@@ -77,6 +94,7 @@ const Login: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500"
                 placeholder="you@company.com"
+                disabled={loading}
               />
             </div>
             
@@ -88,77 +106,43 @@ const Login: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500"
                 placeholder="••••••••"
+                disabled={loading}
               />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as Role)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500"
-              >
-                <option value="" disabled>Select your role...</option>
-                <option value="Fleet Manager">Fleet Manager</option>
-                <option value="Dispatcher">Dispatcher</option>
-                <option value="Safety Officer">Safety Officer</option>
-                <option value="Financial Analyst">Financial Analyst</option>
-              </select>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-amber-500 focus:ring-amber-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
-                </label>
-              </div>
-              <div className="text-sm">
-                <a href="#" className="font-medium text-amber-600 hover:text-amber-500">
-                  Forgot password?
-                </a>
-              </div>
             </div>
 
             <button
               type="submit"
-              disabled={failedAttempts >= 5}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-500 hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50"
+              disabled={loading}
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-500 hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign In
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          {/* Error Message Tooltip-style */}
+          {/* Error Message */}
           {error && (
-            <div className="absolute top-0 -right-64 w-56 bg-red-50 border border-red-200 text-red-700 p-4 rounded-md shadow-sm hidden lg:block">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">Error Status</h3>
-                  <div className="mt-2 text-sm text-red-700">
-                    <p>{error}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {/* Mobile error message */}
-          {error && (
-            <div className="mt-4 lg:hidden bg-red-50 border border-red-200 text-red-700 p-3 rounded-md text-sm">
+            <div className="mt-4 bg-red-50 border border-red-200 text-red-700 p-3 rounded-md text-sm">
               {error}
             </div>
           )}
+
+          {/* Mobile demo credentials */}
+          <div className="mt-8 md:hidden">
+            <p className="text-xs text-gray-500 uppercase tracking-widest mb-3">Quick Demo</p>
+            <div className="space-y-2">
+              {DEMO_CREDENTIALS.map((c) => (
+                <button
+                  key={c.email}
+                  onClick={() => handleDemoLogin(c.email)}
+                  className="w-full text-left px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 text-sm transition-colors"
+                >
+                  <span className="text-amber-600 font-medium">{c.role}</span>
+                  <span className="text-gray-400 text-xs block">{c.email}</span>
+                </button>
+              ))}
+              <p className="text-xs text-gray-400">All passwords: Password123</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
