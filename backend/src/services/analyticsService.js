@@ -46,6 +46,8 @@ async function getDashboardKPIs() {
     fuelLogsForTrend,
     maintenanceForTrend,
     expensesForTrend,
+    insuranceAlertsRaw,
+    driverSafetyRank,
   ] = await Promise.all([
     prisma.vehicle.count(),
     prisma.vehicle.count({ where: { status: 'AVAILABLE' } }),
@@ -103,9 +105,14 @@ async function getDashboardKPIs() {
       select: { id: true, registration_number: true, name_model: true, insurance_expiry: true },
     }),
     prisma.trip.findMany({ where: { created_at: { gte: sixMonthsAgo } }, select: { created_at: true } }),
-    prisma.fuelLog.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, liters: true } }),
+    prisma.fuelLog.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, liters: true, cost: true } }),
     prisma.maintenanceLog.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, cost: true } }),
-    prisma.expense.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, total: true } }),
+    prisma.expense.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, total: true, category: true } }),
+    prisma.driver.findMany({
+      take: 8,
+      orderBy: { safety_score: 'desc' },
+      select: { id: true, name: true, safety_score: true },
+    }),
   ]);
 
   const fleetUtilization =
@@ -140,6 +147,19 @@ async function getDashboardKPIs() {
   const totalOperationalCost = monthlyFuelCost + monthlyExpenses + monthlyMaintenanceCost;
   const totalRevenue = completedTrips.length * 10000;
   const totalProfit = totalRevenue - totalOperationalCost;
+
+  const expenseBreakdownMap = expensesForTrend.reduce((acc, expense) => {
+    const category = expense.category || 'Other';
+    acc[category] = (acc[category] ?? 0) + (expense.total ?? 0);
+    return acc;
+  }, {});
+
+  const expenseBreakdown = Object.entries(expenseBreakdownMap).map(([name, value]) => ({ name, value }));
+
+  const driverSafetyScores = driverSafetyRank.map((driver) => ({
+    name: driver.name,
+    score: driver.safety_score,
+  }));
 
   return {
     kpis: {
@@ -200,6 +220,8 @@ async function getDashboardKPIs() {
       fuel_cost: log.cost,
     })),
     monthlyData,
+    expenseBreakdown,
+    driverSafetyScores,
   };
 }
 

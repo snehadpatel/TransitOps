@@ -338,10 +338,10 @@ const Trips: React.FC = () => {
                         </span>
                         {trip.status === 'DISPATCHED' && (
                           <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
-                            <button onClick={() => handleComplete(trip.id)} disabled={actioningId === trip.id} className="btn btn-success btn-sm" style={{ fontSize: '0.7rem', padding: '4px 10px' }}>
+                            <button onClick={(e) => { e.stopPropagation(); handleComplete(trip.id); }} disabled={actioningId === trip.id} className="btn btn-success btn-sm" style={{ fontSize: '0.7rem', padding: '4px 10px' }}>
                               <i className="fas fa-check"></i> Complete
                             </button>
-                            <button onClick={() => handleCancel(trip.id)} disabled={actioningId === trip.id} className="btn btn-danger btn-sm" style={{ fontSize: '0.7rem', padding: '4px 10px' }}>
+                            <button onClick={(e) => { e.stopPropagation(); handleCancel(trip.id); }} disabled={actioningId === trip.id} className="btn btn-danger btn-sm" style={{ fontSize: '0.7rem', padding: '4px 10px' }}>
                               <i className="fas fa-xmark"></i> Cancel
                             </button>
                           </div>

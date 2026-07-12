@@ -31,6 +31,8 @@ interface DriverAlert { id: string; name: string; license_number: string; licens
 interface VehicleAlert { id: string; registration_number: string; name_model: string; insurance_expiry: string; daysUntil: number; }
 interface ExpenseEntry { id: string; registration_number: string; category: string; amount: number; date: string; }
 interface FuelEntry { id: string; registration_number: string; fuel_quantity: number; fuel_cost: number; }
+interface BreakdownEntry { name: string; value: number; }
+interface SafetyEntry { name: string; score: number; }
 interface VehicleStatusBreakdown { available: number; onTrip: number; inShop: number; retired: number; }
 interface MonthlyData { month: string; trips?: number; fuel?: number; maintenance?: number; revenue?: number; expenses?: number; }
 
@@ -44,6 +46,8 @@ interface DashboardResponse {
   latestExpenses?: ExpenseEntry[];
   latestFuelLogs?: FuelEntry[];
   monthlyData?: MonthlyData[];
+  expenseBreakdown?: BreakdownEntry[];
+  driverSafetyScores?: SafetyEntry[];
 }
 
 const STATUS_BADGE: Record<string, string> = {
@@ -117,6 +121,8 @@ const Dashboard: React.FC = () => {
     { name: 'Retired', value: breakdown.retired },
   ] : [];
   const monthlyData = data?.monthlyData ?? [];
+  const expenseBreakdown = data?.expenseBreakdown ?? [];
+  const driverSafetyScores = data?.driverSafetyScores ?? [];
 
   return (
     <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
@@ -245,6 +251,47 @@ const Dashboard: React.FC = () => {
                       <YAxis tick={{ fontSize: 11, fill: 'var(--tx-text-muted)' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${v / 1000}k`} />
                       <Tooltip contentStyle={{ background: '#1a2036', border: 'none', borderRadius: '8px', color: '#fff' }} formatter={(v) => [`₹${Number(v).toLocaleString('en-IN')}`, 'Cost']} />
                       <Bar dataKey="maintenance" fill={CHART_COLORS[2]} radius={[6, 6, 0, 0]} maxBarSize={40} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Charts Row 3 */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+            <div className="tx-card tx-chart-card">
+              <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--tx-border)' }}>
+                <h6 style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem' }}><i className="fas fa-file-invoice-dollar" style={{ marginRight: '8px', color: 'var(--tx-primary)' }}></i>Expense Breakdown</h6>
+              </div>
+              <div style={{ height: '240px', padding: '16px' }}>
+                {expenseBreakdown.length === 0 ? <div className="empty-state" style={{ padding: '40px' }}><i className="fas fa-chart-pie"></i><div>No data yet</div></div> : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={expenseBreakdown} cx="50%" cy="50%" innerRadius={50} outerRadius={82} paddingAngle={4} dataKey="value" nameKey="name">
+                        {expenseBreakdown.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip contentStyle={{ background: '#1a2036', border: 'none', borderRadius: '8px', color: '#fff' }} />
+                      <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '0.78rem' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </div>
+
+            <div className="tx-card tx-chart-card">
+              <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--tx-border)' }}>
+                <h6 style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem' }}><i className="fas fa-shield-halved" style={{ marginRight: '8px', color: 'var(--tx-primary)' }}></i>Driver Safety Scores</h6>
+              </div>
+              <div style={{ height: '240px', padding: '16px' }}>
+                {driverSafetyScores.length === 0 ? <div className="empty-state" style={{ padding: '40px' }}><i className="fas fa-chart-bar"></i><div>No data yet</div></div> : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={driverSafetyScores} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--tx-border)" />
+                      <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: 'var(--tx-text-muted)' }} axisLine={false} tickLine={false} />
+                      <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 11, fill: 'var(--tx-text-muted)' }} axisLine={false} tickLine={false} />
+                      <Tooltip contentStyle={{ background: '#1a2036', border: 'none', borderRadius: '8px', color: '#fff' }} />
+                      <Bar dataKey="score" fill={CHART_COLORS[1]} radius={[0, 8, 8, 0]} maxBarSize={18} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
