@@ -31,6 +31,7 @@ model Vehicle {
   acquisition_cost    Float
   status              String   @default("AVAILABLE") // AVAILABLE | ON_TRIP | IN_SHOP | RETIRED
   region              String?
+  insurance_expiry    DateTime?
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
 

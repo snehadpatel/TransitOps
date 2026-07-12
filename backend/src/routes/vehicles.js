@@ -17,6 +17,7 @@ const vehicleSchema = z.object({
   acquisition_cost: z.coerce.number().positive('Acquisition cost must be positive.'),
   status: z.enum(['AVAILABLE', 'ON_TRIP', 'IN_SHOP', 'RETIRED']).optional().default('AVAILABLE'),
   region: z.string().optional(),
+  insurance_expiry: z.coerce.date().optional().nullable(),
 });
 
 const vehicleUpdateSchema = vehicleSchema.partial().omit({ registration_number: true });

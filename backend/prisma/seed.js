@@ -45,6 +45,7 @@ async function main() {
       acquisition_cost: 850000,
       status: 'AVAILABLE',
       region: 'North',
+      insurance_expiry: new Date('2026-07-22'),
     },
     {
       registration_number: 'TRK-12',
@@ -55,6 +56,7 @@ async function main() {
       acquisition_cost: 3500000,
       status: 'AVAILABLE',
       region: 'South',
+      insurance_expiry: new Date('2026-09-15'),
     },
     {
       registration_number: 'BUS-03',
@@ -65,6 +67,7 @@ async function main() {
       acquisition_cost: 6000000,
       status: 'IN_SHOP',
       region: 'East',
+      insurance_expiry: new Date('2026-08-04'),
     },
     {
       registration_number: 'VAN-07',
@@ -75,6 +78,7 @@ async function main() {
       acquisition_cost: 720000,
       status: 'AVAILABLE',
       region: 'West',
+      insurance_expiry: new Date('2026-10-01'),
     },
     {
       registration_number: 'TRK-08',
@@ -85,6 +89,7 @@ async function main() {
       acquisition_cost: 2800000,
       status: 'RETIRED',
       region: 'North',
+      insurance_expiry: new Date('2025-12-31'),
     },
   ];
 

@@ -28,6 +28,7 @@ async function getDashboardKPIs() {
   const sixMonthsAgo = startOfMonth(addMonths(now, -(MONTHS_TO_SHOW - 1)));
 
   const [
+    completedTrips,
     totalVehicles,
     availableVehicles,
     inMaintenanceVehicles,
@@ -51,6 +52,10 @@ async function getDashboardKPIs() {
     prisma.vehicle.count({ where: { status: 'IN_SHOP' } }),
     prisma.vehicle.count({ where: { status: 'ON_TRIP' } }),
     prisma.vehicle.count({ where: { status: 'RETIRED' } }),
+    prisma.trip.findMany({
+      where: { status: 'COMPLETED' },
+      select: { id: true },
+    }),
     prisma.trip.count({ where: { status: 'DISPATCHED' } }),
     prisma.trip.count({ where: { status: 'DRAFT' } }),
     prisma.driver.count({ where: { status: { in: ['AVAILABLE', 'ON_TRIP'] } } }),
@@ -87,6 +92,15 @@ async function getDashboardKPIs() {
       take: 5,
       orderBy: { created_at: 'desc' },
       include: { vehicle: { select: { registration_number: true, name_model: true } } },
+    }),
+    prisma.vehicle.findMany({
+      where: {
+        status: { not: 'RETIRED' },
+        insurance_expiry: { lte: addMonths(now, 1) },
+      },
+      take: 5,
+      orderBy: { insurance_expiry: 'asc' },
+      select: { id: true, registration_number: true, name_model: true, insurance_expiry: true },
     }),
     prisma.trip.findMany({ where: { created_at: { gte: sixMonthsAgo } }, select: { created_at: true } }),
     prisma.fuelLog.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, liters: true } }),
@@ -165,7 +179,13 @@ async function getDashboardKPIs() {
       license_expiry: driver.license_expiry,
       daysUntil: daysUntil(driver.license_expiry),
     })),
-    insuranceAlerts: [],
+    insuranceAlerts: insuranceAlertsRaw.map((vehicle) => ({
+      id: vehicle.id,
+      registration_number: vehicle.registration_number,
+      name_model: vehicle.name_model,
+      insurance_expiry: vehicle.insurance_expiry,
+      daysUntil: daysUntil(vehicle.insurance_expiry),
+    })),
     latestExpenses: latestExpenses.map((expense) => ({
       id: expense.id,
       registration_number: expense.vehicle.registration_number,

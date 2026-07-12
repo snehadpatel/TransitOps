@@ -85,7 +85,33 @@ router.get('/notifications', async (req, res, next) => {
       }),
     ]);
 
-    return res.json(buildNotifications({ drivers, maintenance, trips }).slice(0, limit));
+    const vehiclesWithInsurance = await prisma.vehicle.findMany({
+      where: {
+        status: { not: 'RETIRED' },
+        insurance_expiry: { lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
+      },
+      take: limit,
+      orderBy: { insurance_expiry: 'asc' },
+      select: { id: true, registration_number: true, name_model: true, insurance_expiry: true },
+    });
+
+    const notifications = buildNotifications({ drivers, maintenance, trips });
+    vehiclesWithInsurance.forEach((vehicle) => {
+      const days = daysUntil(vehicle.insurance_expiry);
+      notifications.push({
+        id: `insurance-${vehicle.id}`,
+        type: 'INSURANCE_EXPIRY',
+        title: 'Vehicle Insurance Expiring',
+        message: `${vehicle.registration_number} insurance expires in ${days < 0 ? 'expired' : `${days} days`}`,
+        isRead: false,
+        createdAt: vehicle.insurance_expiry.toISOString(),
+        link: '/fleet',
+      });
+    });
+
+    return res.json(notifications
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, limit));
   } catch (error) {
     return next(error);
   }
