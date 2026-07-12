@@ -34,10 +34,10 @@ interface TripsResponse {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  DRAFT: 'bg-gray-100 text-gray-700',
-  DISPATCHED: 'bg-blue-50 text-blue-600',
-  COMPLETED: 'bg-green-100 text-green-700',
-  CANCELLED: 'bg-red-100 text-red-700',
+  DRAFT: 'badge badge-draft',
+  DISPATCHED: 'badge badge-dispatched',
+  COMPLETED: 'badge badge-completed',
+  CANCELLED: 'badge badge-cancelled',
 };
 
 const STATUS_LABEL: Record<string, string> = {
