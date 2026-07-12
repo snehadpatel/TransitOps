@@ -12,6 +12,7 @@ import Trips from './pages/Trips';
 import Maintenance from './pages/Maintenance';
 import Expenses from './pages/Expenses';
 import Analytics from './pages/Analytics';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -48,6 +49,14 @@ function App() {
             <ProtectedRoute allowedRoles={['Financial Analyst']}>
               <Layout>
                 <Analytics />
+              </Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/settings" element={
+            <ProtectedRoute allowedRoles={['Fleet Manager']}>
+              <Layout>
+                <Settings />
               </Layout>
             </ProtectedRoute>
           } />
