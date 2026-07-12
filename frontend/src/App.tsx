@@ -6,6 +6,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
+import Fleet from './pages/Fleet';
 
 function App() {
   return (
@@ -21,6 +22,15 @@ function App() {
               </Layout>
             </ProtectedRoute>
           } />
+
+          <Route path="/fleet" element={
+            <ProtectedRoute allowedRoles={['Fleet Manager', 'Dispatcher', 'Financial Analyst']}>
+              <Layout>
+                <Fleet />
+              </Layout>
+            </ProtectedRoute>
+          } />
+
         </Routes>
       </BrowserRouter>
     </AuthProvider>
