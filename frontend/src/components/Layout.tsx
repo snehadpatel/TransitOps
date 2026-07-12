@@ -99,10 +99,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="app-main">
         {/* ─── Navbar ─── */}
         <header className="app-navbar">
-          <div className="navbar-search">
-            <i className="fas fa-magnifying-glass"></i>
-            <input type="search" placeholder="Search vehicles, drivers, trips…" autoComplete="off" />
-          </div>
+          <GlobalSearch />
 
           <div className="navbar-actions">
             <button className="navbar-icon-btn" onClick={toggleTheme} title="Toggle dark mode">
@@ -112,6 +109,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <i className="fas fa-moon"></i>
               )}
             </button>
+
+            <NotificationDropdown />
 
             <div className="navbar-user-pill">
               <div className="avatar-sm">{user.name.charAt(0)}</div>
