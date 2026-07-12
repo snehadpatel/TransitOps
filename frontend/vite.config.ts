@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     port: 5173,
-    allowedHosts: ['silver-walls-itch.loca.lt'],
+    allowedHosts: ['tile-cartridges-request-mpegs.trycloudflare.com'],
     proxy: {
       '/api': { target: 'http://localhost:5001', changeOrigin: true },
     },
