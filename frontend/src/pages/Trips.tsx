@@ -4,6 +4,7 @@ const Trips: React.FC = () => {
   const [cargoWeight, setCargoWeight] = useState('');
   const [vehicle, setVehicle] = useState('');
   const capacity = vehicle === 'VAN-01' ? 500 : (vehicle === 'TRK-02' ? 2000 : 0);
+  const cargoExceeded = vehicle && cargoWeight && Number(cargoWeight) > capacity;
 
   const mockLiveBoard = [
     { id: 'TR001', route: 'Gandhinagar Depot -> Ahmedabad Hub', vehicle: 'VAN-01', driver: 'Alex', status: 'On Trip', eta: '45 min' },
@@ -83,7 +84,7 @@ const Trips: React.FC = () => {
                   type="number" 
                   value={cargoWeight}
                   onChange={(e) => setCargoWeight(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 text-sm" 
+                  className={`w-full p-2 border rounded-md focus:ring-amber-500 focus:border-amber-500 text-sm ${cargoExceeded ? 'border-red-500' : 'border-gray-300'}`} 
                   placeholder="0" 
                 />
               </div>
@@ -93,8 +94,22 @@ const Trips: React.FC = () => {
               </div>
             </div>
 
+            {cargoExceeded && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md flex items-start text-sm text-red-700">
+                <svg className="h-5 w-5 mr-2 text-red-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>
+                  <strong>Capacity exceeded!</strong> Vehicle Capacity: {capacity} kg, Cargo Weight: {cargoWeight} kg &mdash; Capacity exceeded by {Number(cargoWeight) - capacity} kg &rarr; dispatch blocked.
+                </span>
+              </div>
+            )}
+
             <div className="pt-4 flex space-x-3">
-              <button className="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-md font-medium transition-colors">
+              <button 
+                disabled={cargoExceeded || !cargoWeight || !vehicle}
+                className="flex-1 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 disabled:cursor-not-allowed text-white py-2 rounded-md font-medium transition-colors"
+              >
                 Dispatch Shipment
               </button>
               <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
