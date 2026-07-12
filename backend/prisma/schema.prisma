@@ -1,53 +1,10 @@
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
-}
-
-// ─── Enums ───────────────────────────────────────────────────────────────────
-
-enum Role {
-  FLEET_MANAGER
-  DISPATCHER
-  SAFETY_OFFICER
-  FINANCIAL_ANALYST
-}
-
-enum DriverStatus {
-  AVAILABLE
-  ON_TRIP
-  OFF_DUTY
-  SUSPENDED
-}
-
-enum VehicleStatus {
-  AVAILABLE
-  ON_TRIP
-  IN_SHOP
-  RETIRED
-}
-
-enum VehicleType {
-  VAN
-  TRUCK
-  BUS
-  MOTORCYCLE
-  OTHER
-}
-
-enum TripStatus {
-  DRAFT
-  DISPATCHED
-  COMPLETED
-  CANCELLED
-}
-
-enum MaintenanceStatus {
-  ACTIVE
-  CLOSED
 }
 
 // ─── Models ──────────────────────────────────────────────────────────────────
@@ -57,7 +14,7 @@ model User {
   name            String
   email           String    @unique
   password_hash   String
-  role            Role
+  role            String    // FLEET_MANAGER | DISPATCHER | SAFETY_OFFICER | FINANCIAL_ANALYST
   failed_attempts Int       @default(0)
   locked_until    DateTime?
   created_at      DateTime  @default(now())
@@ -65,22 +22,22 @@ model User {
 }
 
 model Vehicle {
-  id                  String          @id @default(uuid())
-  registration_number String          @unique
+  id                  String   @id @default(uuid())
+  registration_number String   @unique
   name_model          String
-  type                VehicleType     @default(OTHER)
-  max_load_capacity   Float           // kg
-  odometer            Float           @default(0) // km
+  type                String   @default("OTHER") // VAN | TRUCK | BUS | MOTORCYCLE | OTHER
+  max_load_capacity   Float    // kg
+  odometer            Float    @default(0) // km
   acquisition_cost    Float
-  status              VehicleStatus   @default(AVAILABLE)
+  status              String   @default("AVAILABLE") // AVAILABLE | ON_TRIP | IN_SHOP | RETIRED
   region              String?
-  created_at          DateTime        @default(now())
-  updated_at          DateTime        @updatedAt
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
 
-  trips               Trip[]
-  maintenance_logs    MaintenanceLog[]
-  fuel_logs           FuelLog[]
-  expenses            Expense[]
+  trips            Trip[]
+  maintenance_logs MaintenanceLog[]
+  fuel_logs        FuelLog[]
+  expenses         Expense[]
 
   @@index([status])
   @@index([type])
@@ -88,46 +45,46 @@ model Vehicle {
 }
 
 model Driver {
-  id                String       @id @default(uuid())
-  name              String
-  license_number    String       @unique
-  license_category  String
-  license_expiry    DateTime
-  contact_number    String?
-  safety_score      Float        @default(100)
-  trip_completions  Int          @default(0)  // count of COMPLETED trips
-  status            DriverStatus @default(AVAILABLE)
-  created_at        DateTime     @default(now())
-  updated_at        DateTime     @updatedAt
+  id               String   @id @default(uuid())
+  name             String
+  license_number   String   @unique
+  license_category String
+  license_expiry   DateTime
+  contact_number   String?
+  safety_score     Float    @default(100)
+  trip_completions Int      @default(0)
+  status           String   @default("AVAILABLE") // AVAILABLE | ON_TRIP | OFF_DUTY | SUSPENDED
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 
-  trips             Trip[]
+  trips Trip[]
 
   @@index([status])
 }
 
 model Trip {
-  id               String     @id @default(uuid())
-  trip_code        String     @unique
+  id               String    @id @default(uuid())
+  trip_code        String    @unique
   source           String
   destination      String
   vehicle_id       String
-  vehicle          Vehicle    @relation(fields: [vehicle_id], references: [id])
+  vehicle          Vehicle   @relation(fields: [vehicle_id], references: [id])
   driver_id        String
-  driver           Driver     @relation(fields: [driver_id], references: [id])
-  cargo_weight     Float      // kg
-  planned_distance Float      // km
-  status           TripStatus @default(DRAFT)
+  driver           Driver    @relation(fields: [driver_id], references: [id])
+  cargo_weight     Float     // kg
+  planned_distance Float     // km
+  status           String    @default("DRAFT") // DRAFT | DISPATCHED | COMPLETED | CANCELLED
   eta              DateTime?
-  final_odometer   Float?     // km — set on completion
-  fuel_consumed    Float?     // liters — set on completion
+  final_odometer   Float?    // km — set on completion
+  fuel_consumed    Float?    // liters — set on completion
   started_at       DateTime?
   completed_at     DateTime?
   cancelled_at     DateTime?
-  created_at       DateTime   @default(now())
-  updated_at       DateTime   @updatedAt
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
 
-  fuel_logs        FuelLog[]
-  expenses         Expense[]
+  fuel_logs FuelLog[]
+  expenses  Expense[]
 
   @@index([status])
   @@index([vehicle_id])
@@ -135,17 +92,17 @@ model Trip {
 }
 
 model MaintenanceLog {
-  id           String            @id @default(uuid())
+  id           String    @id @default(uuid())
   vehicle_id   String
-  vehicle      Vehicle           @relation(fields: [vehicle_id], references: [id])
+  vehicle      Vehicle   @relation(fields: [vehicle_id], references: [id])
   service_type String
   cost         Float
-  date         DateTime          @default(now())
-  status       MaintenanceStatus @default(ACTIVE)
+  date         DateTime  @default(now())
+  status       String    @default("ACTIVE") // ACTIVE | CLOSED
   notes        String?
   closed_at    DateTime?
-  created_at   DateTime          @default(now())
-  updated_at   DateTime          @updatedAt
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
 
   @@index([vehicle_id])
   @@index([status])
