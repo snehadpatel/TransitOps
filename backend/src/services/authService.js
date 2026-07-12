@@ -92,12 +92,44 @@ async function getMe(userId) {
   return user;
 }
 
-async function register() {
-  throw new AppError(
-    'Public registration is disabled. Use administrator-provisioned accounts.',
-    403,
-    'REGISTRATION_DISABLED'
-  );
+async function register(body) {
+  const { name, email, password, role } = body;
+
+  const VALID_ROLES = ['FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'];
+  if (!name || !email || !password || !role) {
+    throw new AppError('Name, email, password, and role are required.', 400, 'VALIDATION_ERROR');
+  }
+  if (!VALID_ROLES.includes(role)) {
+    throw new AppError(`Invalid role. Must be one of: ${VALID_ROLES.join(', ')}`, 400, 'VALIDATION_ERROR');
+  }
+
+  const existing = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+  if (existing) {
+    throw new AppError('A user with this email already exists.', 409, 'DUPLICATE_EMAIL');
+  }
+
+  const password_hash = await bcrypt.hash(password, 10);
+
+  const user = await prisma.user.create({
+    data: {
+      name,
+      email: email.toLowerCase(),
+      password_hash,
+      role,
+    },
+  });
+
+  const token = signToken({ id: user.id, role: user.role });
+
+  return {
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  };
 }
 
 module.exports = { login, getMe, register };
