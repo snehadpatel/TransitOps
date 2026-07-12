@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth, Role } from '../context/AuthContext';
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState<Role | ''>('');
+  const [email, setEmail] = useState('manager@transitops.com');
+  const [password, setPassword] = useState('Password123');
+  const [role, setRole] = useState<Role | ''>('Fleet Manager');
   const [error, setError] = useState('');
   const [failedAttempts, setFailedAttempts] = useState(0);
   const { login } = useAuth();
