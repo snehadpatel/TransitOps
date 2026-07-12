@@ -20,10 +20,10 @@ interface ApiResponse {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  AVAILABLE: 'bg-green-100 text-green-700',
-  ON_TRIP: 'bg-blue-100 text-blue-700',
-  OFF_DUTY: 'bg-gray-100 text-gray-700',
-  SUSPENDED: 'bg-red-100 text-red-700',
+  AVAILABLE: 'badge badge-available',
+  ON_TRIP: 'badge badge-on_trip',
+  OFF_DUTY: 'badge badge-off_duty',
+  SUSPENDED: 'badge badge-suspended',
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -122,211 +122,175 @@ const Drivers: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Drivers & Safety Profiles</h2>
+    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      {/* Page Header */}
+      <div className="page-header">
+        <div>
+          <div className="section-title"><i className="fas fa-id-card" style={{ marginRight: '8px', color: 'var(--tx-primary)' }}></i>Drivers & Safety Profiles</div>
+          <div className="section-subtitle">Manage driver records, licenses, and safety scores</div>
+        </div>
         {isSafetyOfficer && (
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-md font-medium text-sm transition-colors"
-          >
-            + Add Driver
+          <button onClick={() => setShowAddModal(true)} className="btn btn-primary">
+            <i className="fas fa-plus"></i> Add Driver
           </button>
         )}
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex space-x-6 items-center">
-        <div className="flex-1 max-w-xs">
-          <input
-            type="text"
-            placeholder="Search name or license..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-3 py-1.5 border rounded text-sm focus:outline-none focus:border-amber-500"
-          />
+      <div className="tx-table-wrap" style={{ marginBottom: '20px' }}>
+        <div className="tx-table-toolbar">
+          <div style={{ flex: 1, maxWidth: '320px' }}>
+            <input
+              type="text"
+              placeholder="Search name or license..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="form-control"
+            />
+          </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="tx-table-wrap">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading drivers...</div>
-        ) : error ? (
-          <div className="p-8 text-center text-red-500">{error}</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
-                <tr>
-                  <th className="px-6 py-3 font-medium">DRIVER</th>
-                  <th className="px-6 py-3 font-medium">LICENSE NO.</th>
-                  <th className="px-6 py-3 font-medium">CATEGORY</th>
-                  <th className="px-6 py-3 font-medium">EXPIRY</th>
-                  <th className="px-6 py-3 font-medium">CONTACT</th>
-                  <th className="px-6 py-3 font-medium">TRIPS DONE</th>
-                  <th className="px-6 py-3 font-medium">SAFETY SCORE</th>
-                  <th className="px-6 py-3 font-medium">STATUS</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {drivers.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="px-6 py-8 text-center text-gray-400">No drivers found.</td>
-                  </tr>
-                ) : drivers.map((d) => (
-                  <tr key={d.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-gray-800 font-medium">{d.name}</td>
-                    <td className="px-6 py-4 text-gray-500">{d.license_number}</td>
-                    <td className="px-6 py-4 text-gray-500">{d.license_category}</td>
-                    <td className={`px-6 py-4 font-medium ${isExpired(d.license_expiry) ? 'text-red-500' : 'text-gray-500'}`}>
-                      {formatExpiry(d.license_expiry)}
-                      {isExpired(d.license_expiry) && (
-                        <span className="ml-1 text-xs bg-red-100 text-red-600 px-1 py-0.5 rounded">EXPIRED</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-gray-500">{d.contact_number ?? '—'}</td>
-                    <td className="px-6 py-4 text-gray-500">{completionRate(d)}</td>
-                    <td className="px-6 py-4 font-medium text-gray-800">{d.safety_score}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${STATUS_BADGE[d.status] ?? 'bg-gray-100 text-gray-700'}`}>
-                        {STATUS_LABEL[d.status] ?? d.status}
-                      </span>
-                      {isSafetyOfficer && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {['AVAILABLE', 'OFF_DUTY', 'SUSPENDED'].map((s) => (
-                            <button
-                              key={s}
-                              disabled={s === d.status || updatingId === d.id}
-                              onClick={() => handleStatusChange(d.id, s)}
-                              className={`text-[10px] px-2 py-0.5 rounded border ${
-                                s === d.status
-                                  ? `opacity-50 cursor-not-allowed border-transparent ${STATUS_BADGE[s]}`
-                                  : 'border-gray-300 hover:bg-gray-50 text-gray-600'
-                              }`}
-                            >
-                              {STATUS_LABEL[s]}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{ padding: '60px', textAlign: 'center', color: 'var(--tx-text-muted)' }}>
+            <i className="fas fa-spinner fa-spin" style={{ fontSize: '1.2rem' }}></i>
+            <div style={{ marginTop: '8px' }}>Loading drivers…</div>
           </div>
+        ) : error ? (
+          <div className="rule-error" style={{ margin: '20px' }}><i className="fas fa-circle-exclamation"></i>{error}</div>
+        ) : (
+          <table className="tx-table">
+            <thead>
+              <tr>
+                <th>Driver</th>
+                <th>License No.</th>
+                <th>Category</th>
+                <th>Expiry</th>
+                <th>Contact</th>
+                <th>Trips Done</th>
+                <th>Safety Score</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {drivers.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="empty-state">
+                    <i className="fas fa-id-card" style={{ display: 'block' }}></i>
+                    No drivers found.
+                  </td>
+                </tr>
+              ) : drivers.map((d) => (
+                <tr key={d.id}>
+                  <td style={{ fontWeight: 600 }}>{d.name}</td>
+                  <td>{d.license_number}</td>
+                  <td>{d.license_category}</td>
+                  <td>
+                    <span style={{ fontWeight: 500, color: isExpired(d.license_expiry) ? 'var(--tx-danger)' : undefined }}>
+                      {formatExpiry(d.license_expiry)}
+                    </span>
+                    {isExpired(d.license_expiry) && (
+                      <span className="badge badge-cancelled" style={{ marginLeft: '6px', fontSize: '0.65rem' }}>EXPIRED</span>
+                    )}
+                  </td>
+                  <td>{d.contact_number ?? '—'}</td>
+                  <td>{completionRate(d)}</td>
+                  <td style={{ fontWeight: 600 }}>{d.safety_score}</td>
+                  <td>
+                    <span className={STATUS_BADGE[d.status] ?? 'badge badge-off_duty'}>
+                      {STATUS_LABEL[d.status] ?? d.status}
+                    </span>
+                    {isSafetyOfficer && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
+                        {['AVAILABLE', 'OFF_DUTY', 'SUSPENDED'].map((s) => (
+                          <button
+                            key={s}
+                            disabled={s === d.status || updatingId === d.id}
+                            onClick={() => handleStatusChange(d.id, s)}
+                            className={s === d.status ? 'btn btn-sm' : 'btn btn-light btn-sm'}
+                            style={{
+                              fontSize: '0.65rem',
+                              padding: '2px 8px',
+                              opacity: s === d.status ? 0.4 : 1,
+                            }}
+                          >
+                            {STATUS_LABEL[s]}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
 
-      <p className="text-sm text-red-500 font-medium italic">
-        Note: Expired license or Suspended status = blocked from trip assignment.
+      <p style={{ fontSize: '0.8rem', color: 'var(--tx-text-muted)', marginTop: '12px', fontStyle: 'italic' }}>
+        <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i>
+        Expired license or Suspended status = blocked from trip assignment.
       </p>
 
       {/* Add Driver Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold mb-4">Add New Driver</h3>
-            <form onSubmit={handleAddDriver} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                  <input
-                    required
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full p-2 border rounded text-sm focus:border-amber-500 focus:outline-none"
-                    placeholder="e.g. Alex Kumar"
-                  />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,12,20,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1050 }}>
+          <div className="tx-card" style={{ width: '100%', maxWidth: '560px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="tx-card-body">
+              <h3 style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '20px' }}>
+                <i className="fas fa-plus-circle" style={{ marginRight: '8px', color: 'var(--tx-primary)' }}></i>Add New Driver
+              </h3>
+              <form onSubmit={handleAddDriver} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label className="form-label">Full Name *</label>
+                    <input required type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="form-control" placeholder="e.g. Alex Kumar" />
+                  </div>
+                  <div>
+                    <label className="form-label">License No. *</label>
+                    <input required type="text" value={form.license_number} onChange={(e) => setForm({ ...form, license_number: e.target.value.toUpperCase() })} className="form-control" placeholder="DL-MH-2024-0001" />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">License No. *</label>
-                  <input
-                    required
-                    type="text"
-                    value={form.license_number}
-                    onChange={(e) => setForm({ ...form, license_number: e.target.value.toUpperCase() })}
-                    className="w-full p-2 border rounded text-sm focus:border-amber-500 focus:outline-none"
-                    placeholder="DL-MH-2024-0001"
-                  />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label className="form-label">Category *</label>
+                    <select value={form.license_category} onChange={(e) => setForm({ ...form, license_category: e.target.value })} className="form-select">
+                      <option value="LMV">LMV</option>
+                      <option value="LMV-TR">LMV-TR</option>
+                      <option value="HMV">HMV</option>
+                      <option value="HPMV">HPMV</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="form-label">License Expiry *</label>
+                    <input required type="date" value={form.license_expiry} onChange={(e) => setForm({ ...form, license_expiry: e.target.value })} className="form-control" />
+                  </div>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                  <select
-                    value={form.license_category}
-                    onChange={(e) => setForm({ ...form, license_category: e.target.value })}
-                    className="w-full p-2 border rounded text-sm focus:border-amber-500 focus:outline-none"
-                  >
-                    <option value="LMV">LMV</option>
-                    <option value="LMV-TR">LMV-TR</option>
-                    <option value="HMV">HMV</option>
-                    <option value="HPMV">HPMV</option>
-                  </select>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label className="form-label">Contact No.</label>
+                    <input type="tel" value={form.contact_number} onChange={(e) => setForm({ ...form, contact_number: e.target.value })} className="form-control" placeholder="+91-9876543210" />
+                  </div>
+                  <div>
+                    <label className="form-label">Safety Score (0–100)</label>
+                    <input type="number" min="0" max="100" step="0.1" value={form.safety_score} onChange={(e) => setForm({ ...form, safety_score: e.target.value })} className="form-control" />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">License Expiry *</label>
-                  <input
-                    required
-                    type="date"
-                    value={form.license_expiry}
-                    onChange={(e) => setForm({ ...form, license_expiry: e.target.value })}
-                    className="w-full p-2 border rounded text-sm focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact No.</label>
-                  <input
-                    type="tel"
-                    value={form.contact_number}
-                    onChange={(e) => setForm({ ...form, contact_number: e.target.value })}
-                    className="w-full p-2 border rounded text-sm focus:border-amber-500 focus:outline-none"
-                    placeholder="+91-9876543210"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Safety Score (0–100)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={form.safety_score}
-                    onChange={(e) => setForm({ ...form, safety_score: e.target.value })}
-                    className="w-full p-2 border rounded text-sm focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-              </div>
 
-              {saveError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-                  {saveError}
-                </div>
-              )}
+                {saveError && (
+                  <div className="rule-error"><i className="fas fa-circle-exclamation"></i>{saveError}</div>
+                )}
 
-              <div className="flex justify-end space-x-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => { setShowAddModal(false); setSaveError(''); setForm(EMPTY_DRIVER); }}
-                  className="px-4 py-2 border rounded text-sm text-gray-600 hover:bg-gray-50"
-                  disabled={saving}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-amber-500 text-white rounded text-sm font-medium hover:bg-amber-600 disabled:opacity-50"
-                  disabled={saving}
-                >
-                  {saving ? 'Saving...' : 'Save Driver'}
-                </button>
-              </div>
-            </form>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '8px' }}>
+                  <button type="button" onClick={() => { setShowAddModal(false); setSaveError(''); setForm(EMPTY_DRIVER); }} className="btn btn-light" disabled={saving}>Cancel</button>
+                  <button type="submit" className="btn btn-primary" disabled={saving}>
+                    {saving ? 'Saving…' : 'Save Driver'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
