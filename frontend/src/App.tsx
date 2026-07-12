@@ -4,9 +4,9 @@ import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 import Login from './pages/Login';
+import Layout from './components/Layout';
 
 // Mock components for now to satisfy router
-const Layout = ({ children }: { children: React.ReactNode }) => <div>Layout {children}</div>;
 const Dashboard = () => <div>Dashboard</div>;
 
 function App() {
