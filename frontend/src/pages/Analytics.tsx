@@ -91,12 +91,12 @@ const Analytics: React.FC = () => {
     autoTable(doc, {
       startY: 30,
       head: [['Metric', 'Value']],
-      body: [
-        ['Fuel Efficiency (Dist/Fuel)', '8.4 km/l'],
-        ['Fleet Utilization', '87%'],
-        ['Operational Cost', '₹34,000'],
-        ['Vehicle ROI', '14.2%']
-      ],
+      body: kpis ? [
+        ['Fuel Efficiency (Dist/Fuel)', `${kpis.fuelEfficiency} km/l`],
+        ['Fleet Utilization', `${kpis.fleetUtilization}%`],
+        ['Operational Cost', formatCurrency(kpis.totalOperationalCost)],
+        ['Vehicle ROI', `${kpis.roi}%`]
+      ] : [],
     });
 
     const docAny = doc as any;
