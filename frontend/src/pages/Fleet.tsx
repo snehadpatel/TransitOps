@@ -19,10 +19,10 @@ interface ApiResponse {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  AVAILABLE: 'bg-green-100 text-green-700',
-  ON_TRIP: 'bg-blue-100 text-blue-700',
-  IN_SHOP: 'bg-orange-100 text-orange-700',
-  RETIRED: 'bg-red-100 text-red-700',
+  AVAILABLE: 'badge badge-available',
+  ON_TRIP: 'badge badge-on_trip',
+  IN_SHOP: 'badge badge-in_shop',
+  RETIRED: 'badge badge-retired',
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -103,7 +103,6 @@ const Fleet: React.FC = () => {
   const handleOpenDocs = async (vehicle: any) => {
     setSelectedVehicle(vehicle);
     setShowDocsModal(true);
-    // Fetch docs from API
     try {
       const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
       const res = await fetch(`${VITE_API_URL}/vehicles/${vehicle.id || vehicle.reg}/documents`, {
@@ -144,266 +143,216 @@ const Fleet: React.FC = () => {
     `${val.toLocaleString('en-IN')} km`;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Vehicle Registry</h2>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-md font-medium text-sm transition-colors"
-        >
-          + Add Vehicle
+    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      {/* Page Header */}
+      <div className="page-header">
+        <div>
+          <div className="section-title"><i className="fas fa-truck" style={{ marginRight: '8px', color: 'var(--tx-primary)' }}></i>Vehicle Registry</div>
+          <div className="section-subtitle">Manage and track all vehicles in your fleet</div>
+        </div>
+        <button onClick={() => setShowAddModal(true)} className="btn btn-primary">
+          <i className="fas fa-plus"></i> Add Vehicle
         </button>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-wrap gap-4 items-center">
-        <div className="flex-1 min-w-48">
-          <input
-            type="text"
-            placeholder="Search Registration / Model..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-3 py-1.5 border rounded text-sm focus:outline-none focus:border-amber-500"
-          />
-        </div>
-        <div className="flex space-x-2 items-center">
-          <label className="text-sm text-gray-500">Type</label>
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="border-b border-gray-300 text-sm focus:outline-none focus:border-amber-500 bg-transparent pb-1"
-          >
-            <option value="">All</option>
-            <option value="VAN">Van</option>
-            <option value="TRUCK">Truck</option>
-            <option value="BUS">Bus</option>
-            <option value="MOTORCYCLE">Motorcycle</option>
-          </select>
-        </div>
-        <div className="flex space-x-2 items-center">
-          <label className="text-sm text-gray-500">Status</label>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="border-b border-gray-300 text-sm focus:outline-none focus:border-amber-500 bg-transparent pb-1"
-          >
-            <option value="">All</option>
-            <option value="AVAILABLE">Available</option>
-            <option value="ON_TRIP">On Trip</option>
-            <option value="IN_SHOP">In Shop</option>
-            <option value="RETIRED">Retired</option>
-          </select>
+      <div className="tx-table-wrap" style={{ marginBottom: '20px' }}>
+        <div className="tx-table-toolbar">
+          <div style={{ flex: 1, minWidth: '200px' }}>
+            <input
+              type="text"
+              placeholder="Search Registration / Model..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="form-control"
+              style={{ maxWidth: '320px' }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <label className="form-label" style={{ margin: 0, whiteSpace: 'nowrap' }}>Type</label>
+            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="form-select" style={{ width: 'auto', minWidth: '100px' }}>
+              <option value="">All</option>
+              <option value="VAN">Van</option>
+              <option value="TRUCK">Truck</option>
+              <option value="BUS">Bus</option>
+              <option value="MOTORCYCLE">Motorcycle</option>
+            </select>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <label className="form-label" style={{ margin: 0, whiteSpace: 'nowrap' }}>Status</label>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="form-select" style={{ width: 'auto', minWidth: '120px' }}>
+              <option value="">All</option>
+              <option value="AVAILABLE">Available</option>
+              <option value="ON_TRIP">On Trip</option>
+              <option value="IN_SHOP">In Shop</option>
+              <option value="RETIRED">Retired</option>
+            </select>
+          </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="tx-table-wrap">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading vehicles...</div>
-        ) : error ? (
-          <div className="p-8 text-center text-red-500">{error}</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
-                <tr>
-                  <th className="px-6 py-3 font-medium">REG. NO.</th>
-                  <th className="px-6 py-3 font-medium">NAME/MODEL</th>
-                  <th className="px-6 py-3 font-medium">TYPE</th>
-                  <th className="px-6 py-3 font-medium">CAPACITY</th>
-                  <th className="px-6 py-3 font-medium">ODOMETER</th>
-                  <th className="px-6 py-3 font-medium">ACQUISITION COST</th>
-                  <th className="px-6 py-3 font-medium">STATUS</th>
-                  <th className="px-6 py-3 font-medium text-right">ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {vehicles.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="px-6 py-8 text-center text-gray-400">No vehicles found.</td>
-                  </tr>
-                ) : vehicles.map((v) => (
-                  <tr key={v.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-gray-800 font-medium">{v.registration_number}</td>
-                    <td className="px-6 py-4 text-gray-500">{v.name_model}</td>
-                    <td className="px-6 py-4 text-gray-500">{v.type}</td>
-                    <td className="px-6 py-4 text-gray-500">{v.max_load_capacity} kg</td>
-                    <td className="px-6 py-4 text-gray-500">{formatKm(v.odometer)}</td>
-                    <td className="px-6 py-4 text-gray-500">{formatCurrency(v.acquisition_cost)}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${STATUS_BADGE[v.status] ?? 'bg-gray-100 text-gray-700'}`}>
-                        {STATUS_LABEL[v.status] ?? v.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button onClick={() => handleOpenDocs(v)} className="text-amber-500 hover:text-amber-600 font-medium text-sm">
-                        Documents
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{ padding: '60px', textAlign: 'center', color: 'var(--tx-text-muted)' }}>
+            <i className="fas fa-spinner fa-spin" style={{ fontSize: '1.2rem' }}></i>
+            <div style={{ marginTop: '8px' }}>Loading vehicles…</div>
           </div>
+        ) : error ? (
+          <div className="rule-error" style={{ margin: '20px' }}><i className="fas fa-circle-exclamation"></i>{error}</div>
+        ) : (
+          <table className="tx-table">
+            <thead>
+              <tr>
+                <th>Reg. No.</th>
+                <th>Name / Model</th>
+                <th>Type</th>
+                <th>Capacity</th>
+                <th>Odometer</th>
+                <th>Acq. Cost</th>
+                <th>Status</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {vehicles.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="empty-state">
+                    <i className="fas fa-truck" style={{ display: 'block' }}></i>
+                    No vehicles found.
+                  </td>
+                </tr>
+              ) : vehicles.map((v) => (
+                <tr key={v.id}>
+                  <td style={{ fontWeight: 600 }}>{v.registration_number}</td>
+                  <td>{v.name_model}</td>
+                  <td>{v.type}</td>
+                  <td>{v.max_load_capacity} kg</td>
+                  <td>{formatKm(v.odometer)}</td>
+                  <td>{formatCurrency(v.acquisition_cost)}</td>
+                  <td>
+                    <span className={STATUS_BADGE[v.status] ?? 'badge badge-draft'}>
+                      {STATUS_LABEL[v.status] ?? v.status}
+                    </span>
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
+                    <button onClick={() => handleOpenDocs(v)} className="btn btn-outline-primary btn-sm">
+                      <i className="fas fa-folder-open"></i> Docs
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
 
-      <p className="text-sm text-red-500 font-medium italic">
-        Note: Registration No. must be unique. Retired/In Shop vehicles are hidden from Trip Dispatcher.
+      <p style={{ fontSize: '0.8rem', color: 'var(--tx-text-muted)', marginTop: '12px', fontStyle: 'italic' }}>
+        <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i>
+        Registration No. must be unique. Retired/In Shop vehicles are hidden from Trip Dispatcher.
       </p>
 
       {/* Add Vehicle Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold mb-4 dark:text-white">Add New Vehicle</h3>
-            <form onSubmit={handleAddVehicle} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Registration No. *</label>
-                  <input
-                    required
-                    type="text"
-                    value={form.registration_number}
-                    onChange={(e) => setForm({ ...form, registration_number: e.target.value.toUpperCase() })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded text-sm focus:border-amber-500 focus:outline-none dark:bg-gray-700 dark:text-white"
-                    placeholder="e.g. MH12AB1234"
-                  />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,12,20,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1050 }}>
+          <div className="tx-card" style={{ width: '100%', maxWidth: '560px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="tx-card-body">
+              <h3 style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '20px' }}>
+                <i className="fas fa-plus-circle" style={{ marginRight: '8px', color: 'var(--tx-primary)' }}></i>Add New Vehicle
+              </h3>
+              <form onSubmit={handleAddVehicle} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label className="form-label">Registration No. *</label>
+                    <input required type="text" value={form.registration_number} onChange={(e) => setForm({ ...form, registration_number: e.target.value.toUpperCase() })} className="form-control" placeholder="e.g. MH12AB1234" />
+                  </div>
+                  <div>
+                    <label className="form-label">Name / Model *</label>
+                    <input required type="text" value={form.name_model} onChange={(e) => setForm({ ...form, name_model: e.target.value })} className="form-control" placeholder="e.g. Toyota HiAce" />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name / Model *</label>
-                  <input
-                    required
-                    type="text"
-                    value={form.name_model}
-                    onChange={(e) => setForm({ ...form, name_model: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded text-sm focus:border-amber-500 focus:outline-none dark:bg-gray-700 dark:text-white"
-                    placeholder="e.g. Toyota HiAce"
-                  />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label className="form-label">Type *</label>
+                    <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="form-select">
+                      <option value="VAN">Van</option>
+                      <option value="TRUCK">Truck</option>
+                      <option value="BUS">Bus</option>
+                      <option value="MOTORCYCLE">Motorcycle</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="form-label">Region</label>
+                    <input type="text" value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} className="form-control" placeholder="e.g. North" />
+                  </div>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type *</label>
-                  <select
-                    value={form.type}
-                    onChange={(e) => setForm({ ...form, type: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded text-sm focus:border-amber-500 focus:outline-none dark:bg-gray-700 dark:text-white"
-                  >
-                    <option value="VAN">Van</option>
-                    <option value="TRUCK">Truck</option>
-                    <option value="BUS">Bus</option>
-                    <option value="MOTORCYCLE">Motorcycle</option>
-                    <option value="OTHER">Other</option>
-                  </select>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label className="form-label">Max Load (kg) *</label>
+                    <input required type="number" min="1" step="0.1" value={form.max_load_capacity} onChange={(e) => setForm({ ...form, max_load_capacity: e.target.value })} className="form-control" placeholder="500" />
+                  </div>
+                  <div>
+                    <label className="form-label">Odometer (km)</label>
+                    <input type="number" min="0" value={form.odometer} onChange={(e) => setForm({ ...form, odometer: e.target.value })} className="form-control" placeholder="0" />
+                  </div>
+                  <div>
+                    <label className="form-label">Acq. Cost (₹) *</label>
+                    <input required type="number" min="1" value={form.acquisition_cost} onChange={(e) => setForm({ ...form, acquisition_cost: e.target.value })} className="form-control" placeholder="1200000" />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Region</label>
-                  <input
-                    type="text"
-                    value={form.region}
-                    onChange={(e) => setForm({ ...form, region: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded text-sm focus:border-amber-500 focus:outline-none dark:bg-gray-700 dark:text-white"
-                    placeholder="e.g. North"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Max Load (kg) *</label>
-                  <input
-                    required
-                    type="number"
-                    min="1"
-                    step="0.1"
-                    value={form.max_load_capacity}
-                    onChange={(e) => setForm({ ...form, max_load_capacity: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded text-sm focus:border-amber-500 focus:outline-none dark:bg-gray-700 dark:text-white"
-                    placeholder="500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Odometer (km)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={form.odometer}
-                    onChange={(e) => setForm({ ...form, odometer: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded text-sm focus:border-amber-500 focus:outline-none dark:bg-gray-700 dark:text-white"
-                    placeholder="0"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Acq. Cost (₹) *</label>
-                  <input
-                    required
-                    type="number"
-                    min="1"
-                    value={form.acquisition_cost}
-                    onChange={(e) => setForm({ ...form, acquisition_cost: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded text-sm focus:border-amber-500 focus:outline-none dark:bg-gray-700 dark:text-white"
-                    placeholder="1200000"
-                  />
-                </div>
-              </div>
 
-              {saveError && (
-                <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-400">
-                  {saveError}
-                </div>
-              )}
+                {saveError && (
+                  <div className="rule-error"><i className="fas fa-circle-exclamation"></i>{saveError}</div>
+                )}
 
-              <div className="flex justify-end space-x-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => { setShowAddModal(false); setSaveError(''); setForm(EMPTY_FORM); }}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  disabled={saving}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-amber-500 text-white rounded text-sm font-medium hover:bg-amber-600 disabled:opacity-50"
-                  disabled={saving}
-                >
-                  {saving ? 'Saving...' : 'Save Vehicle'}
-                </button>
-              </div>
-            </form>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '8px' }}>
+                  <button type="button" onClick={() => { setShowAddModal(false); setSaveError(''); setForm(EMPTY_FORM); }} className="btn btn-light" disabled={saving}>Cancel</button>
+                  <button type="submit" className="btn btn-primary" disabled={saving}>
+                    {saving ? 'Saving…' : 'Save Vehicle'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
 
       {/* Documents Modal */}
       {showDocsModal && selectedVehicle && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md max-h-[80vh] flex flex-col">
-            <h3 className="text-lg font-bold mb-2 dark:text-white">Documents - {selectedVehicle.name}</h3>
-            <p className="text-sm text-gray-500 mb-4 dark:text-gray-400">Upload and view vehicle documents (PDF/PNG).</p>
-            
-            <div className="mb-4">
-              <input type="file" id="docUpload" className="hidden" accept=".pdf,image/*" onChange={handleUpload} />
-              <label htmlFor="docUpload" className="cursor-pointer flex items-center justify-center w-full py-2 px-4 border border-dashed border-gray-400 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                {uploading ? 'Uploading...' : '+ Upload Document'}
-              </label>
-            </div>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,12,20,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1050 }}>
+          <div className="tx-card" style={{ width: '100%', maxWidth: '480px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+            <div className="tx-card-body" style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+              <h3 style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '4px' }}>
+                <i className="fas fa-folder-open" style={{ marginRight: '8px', color: 'var(--tx-primary)' }}></i>Documents
+              </h3>
+              <p style={{ fontSize: '0.82rem', color: 'var(--tx-text-muted)', marginBottom: '16px' }}>Upload and view vehicle documents (PDF/PNG).</p>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <input type="file" id="docUpload" style={{ display: 'none' }} accept=".pdf,image/*" onChange={handleUpload} />
+                <label htmlFor="docUpload" className="btn btn-light" style={{ width: '100%', justifyContent: 'center', cursor: 'pointer', border: '2px dashed var(--tx-border)' }}>
+                  <i className="fas fa-cloud-arrow-up"></i>
+                  {uploading ? 'Uploading…' : 'Upload Document'}
+                </label>
+              </div>
 
-            <div className="flex-1 overflow-y-auto space-y-2">
-              {docs.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-4">No documents found.</p>
-              ) : (
-                docs.map((d, i) => (
-                  <div key={i} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate pr-4">{d.name}</span>
-                    <a href={`http://localhost:5001${d.url}`} target="_blank" rel="noreferrer" className="text-amber-500 hover:text-amber-600 text-sm font-medium whitespace-nowrap">View</a>
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {docs.length === 0 ? (
+                  <div className="empty-state" style={{ padding: '30px' }}>
+                    <i className="fas fa-file-lines" style={{ display: 'block' }}></i>
+                    No documents found.
                   </div>
-                ))
-              )}
-            </div>
+                ) : docs.map((d, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'var(--tx-bg-alt)', borderRadius: '10px', border: '1px solid var(--tx-border)' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 500 }}><i className="fas fa-file" style={{ marginRight: '8px', color: 'var(--tx-primary)' }}></i>{d.name}</span>
+                    <a href={`http://localhost:5001${d.url}`} target="_blank" rel="noreferrer" className="btn btn-outline-primary btn-sm">View</a>
+                  </div>
+                ))}
+              </div>
 
-            <div className="mt-6 flex justify-end">
-              <button onClick={() => setShowDocsModal(false)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Close</button>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                <button onClick={() => setShowDocsModal(false)} className="btn btn-light">Close</button>
+              </div>
             </div>
           </div>
         </div>
