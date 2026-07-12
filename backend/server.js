@@ -20,6 +20,8 @@ const maintenanceRoutes = require('./src/routes/maintenance');
 const fuelExpenseRoutes = require('./src/routes/fuelExpenses');
 const analyticsRoutes = require('./src/routes/analytics');
 const settingsRoutes = require('./src/routes/settings');
+const searchRoutes = require('./src/routes/search');
+const notificationRoutes = require('./src/routes/notifications');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -61,6 +63,8 @@ app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api', fuelExpenseRoutes); // mounts /api/fuel and /api/expenses
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api', searchRoutes);
+app.use('/api', notificationRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 

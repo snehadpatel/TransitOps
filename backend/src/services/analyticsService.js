@@ -1,9 +1,32 @@
 const prisma = require('../utils/prismaClient');
 
+const MONTHS_TO_SHOW = 6;
+
+function startOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function addMonths(date, count) {
+  return new Date(date.getFullYear(), date.getMonth() + count, 1);
+}
+
+function formatMonthLabel(date) {
+  return date.toLocaleDateString('en-IN', { month: 'short' });
+}
+
+function daysUntil(date) {
+  const start = new Date().setHours(0, 0, 0, 0);
+  const target = new Date(date).setHours(0, 0, 0, 0);
+  return Math.ceil((target - start) / (1000 * 60 * 60 * 24));
+}
+
 /**
  * Dashboard KPIs — aggregated stats for the landing page.
  */
 async function getDashboardKPIs() {
+  const now = new Date();
+  const sixMonthsAgo = startOfMonth(addMonths(now, -(MONTHS_TO_SHOW - 1)));
+
   const [
     totalVehicles,
     availableVehicles,
@@ -14,6 +37,14 @@ async function getDashboardKPIs() {
     pendingTrips,
     driversOnDuty,
     recentTrips,
+    upcomingMaintenance,
+    licenseAlerts,
+    latestExpenses,
+    latestFuelLogs,
+    tripsForTrend,
+    fuelLogsForTrend,
+    maintenanceForTrend,
+    expensesForTrend,
   ] = await Promise.all([
     prisma.vehicle.count(),
     prisma.vehicle.count({ where: { status: 'AVAILABLE' } }),
@@ -32,10 +63,69 @@ async function getDashboardKPIs() {
         driver: { select: { name: true } },
       },
     }),
+    prisma.maintenanceLog.findMany({
+      where: { status: 'ACTIVE' },
+      take: 5,
+      orderBy: { date: 'asc' },
+      include: { vehicle: { select: { registration_number: true, name_model: true } } },
+    }),
+    prisma.driver.findMany({
+      where: {
+        status: 'AVAILABLE',
+        license_expiry: { lte: addMonths(now, 1) },
+      },
+      take: 5,
+      orderBy: { license_expiry: 'asc' },
+      select: { id: true, name: true, license_number: true, license_expiry: true },
+    }),
+    prisma.expense.findMany({
+      take: 5,
+      orderBy: { date: 'desc' },
+      include: { vehicle: { select: { registration_number: true, name_model: true } } },
+    }),
+    prisma.fuelLog.findMany({
+      take: 5,
+      orderBy: { created_at: 'desc' },
+      include: { vehicle: { select: { registration_number: true, name_model: true } } },
+    }),
+    prisma.trip.findMany({ where: { created_at: { gte: sixMonthsAgo } }, select: { created_at: true } }),
+    prisma.fuelLog.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, liters: true } }),
+    prisma.maintenanceLog.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, cost: true } }),
+    prisma.expense.findMany({ where: { date: { gte: sixMonthsAgo } }, select: { date: true, total: true } }),
   ]);
 
   const fleetUtilization =
     totalVehicles > 0 ? Math.round((onTripVehicles / totalVehicles) * 100) : 0;
+
+  const monthlyData = Array.from({ length: MONTHS_TO_SHOW }, (_, index) => {
+    const monthStart = startOfMonth(addMonths(sixMonthsAgo, index));
+    const monthEnd = addMonths(monthStart, 1);
+    const trips = tripsForTrend.filter((trip) => trip.created_at >= monthStart && trip.created_at < monthEnd).length;
+    const fuel = fuelLogsForTrend
+      .filter((log) => log.date >= monthStart && log.date < monthEnd)
+      .reduce((sum, log) => sum + (log.liters ?? 0), 0);
+    const maintenance = maintenanceForTrend
+      .filter((log) => log.date >= monthStart && log.date < monthEnd)
+      .reduce((sum, log) => sum + (log.cost ?? 0), 0);
+    const expenses = expensesForTrend
+      .filter((expense) => expense.date >= monthStart && expense.date < monthEnd)
+      .reduce((sum, expense) => sum + (expense.total ?? 0), 0);
+
+    return {
+      month: formatMonthLabel(monthStart),
+      trips,
+      fuel: Math.round(fuel),
+      maintenance: Math.round(maintenance),
+      expenses: Math.round(expenses),
+    };
+  });
+
+  const monthlyFuelCost = fuelLogsForTrend.reduce((sum, log) => sum + (log.cost ?? 0), 0);
+  const monthlyExpenses = expensesForTrend.reduce((sum, expense) => sum + (expense.total ?? 0), 0);
+  const monthlyMaintenanceCost = maintenanceForTrend.reduce((sum, log) => sum + (log.cost ?? 0), 0);
+  const totalOperationalCost = monthlyFuelCost + monthlyExpenses + monthlyMaintenanceCost;
+  const totalRevenue = completedTrips.length * 10000;
+  const totalProfit = totalRevenue - totalOperationalCost;
 
   return {
     kpis: {
@@ -48,6 +138,12 @@ async function getDashboardKPIs() {
       pendingTrips,
       driversOnDuty,
       fleetUtilization,
+      monthlyFuelCost,
+      monthlyExpenses,
+      totalOperationalCost,
+      totalRevenue,
+      totalProfit,
+      monthlyMaintenanceCost,
     },
     vehicleStatusBreakdown: {
       available: availableVehicles,
@@ -56,6 +152,34 @@ async function getDashboardKPIs() {
       retired: retiredVehicles,
     },
     recentTrips,
+    upcomingMaintenance: upcomingMaintenance.map((log) => ({
+      id: log.id,
+      registration_number: log.vehicle.registration_number,
+      service_type: log.service_type,
+      start_date: log.date,
+    })),
+    licenseAlerts: licenseAlerts.map((driver) => ({
+      id: driver.id,
+      name: driver.name,
+      license_number: driver.license_number,
+      license_expiry: driver.license_expiry,
+      daysUntil: daysUntil(driver.license_expiry),
+    })),
+    insuranceAlerts: [],
+    latestExpenses: latestExpenses.map((expense) => ({
+      id: expense.id,
+      registration_number: expense.vehicle.registration_number,
+      category: expense.category || 'Expense',
+      amount: expense.total,
+      date: expense.date,
+    })),
+    latestFuelLogs: latestFuelLogs.map((log) => ({
+      id: log.id,
+      registration_number: log.vehicle.registration_number,
+      fuel_quantity: log.liters,
+      fuel_cost: log.cost,
+    })),
+    monthlyData,
   };
 }
 
