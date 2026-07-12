@@ -3,8 +3,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
+import Login from './pages/Login';
+
 // Mock components for now to satisfy router
-const Login = () => <div>Login Screen</div>;
 const Layout = ({ children }: { children: React.ReactNode }) => <div>Layout {children}</div>;
 const Dashboard = () => <div>Dashboard</div>;
 
