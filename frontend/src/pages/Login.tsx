@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const DEMO_CREDENTIALS = [
-  { role: 'Fleet Manager', email: 'manager@transitops.com' },
-  { role: 'Dispatcher', email: 'dispatcher@transitops.com' },
-  { role: 'Safety Officer', email: 'safety@transitops.com' },
-  { role: 'Financial Analyst', email: 'analyst@transitops.com' },
+  { role: 'Fleet Manager', email: 'manager@transitops.com', icon: 'fa-truck' },
+  { role: 'Dispatcher', email: 'dispatcher@transitops.com', icon: 'fa-route' },
+  { role: 'Safety Officer', email: 'safety@transitops.com', icon: 'fa-shield-halved' },
+  { role: 'Financial Analyst', email: 'analyst@transitops.com', icon: 'fa-chart-line' },
 ];
 
 const Login: React.FC = () => {
@@ -14,6 +14,7 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -22,7 +23,7 @@ const Login: React.FC = () => {
     setError('');
 
     if (!email || !password) {
-      setError('Please fill in all fields.');
+      setError('Please enter both email and password.');
       return;
     }
 
@@ -44,107 +45,102 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-full bg-gray-50">
-      {/* Left Panel */}
-      <div className="hidden md:flex flex-col justify-center w-1/3 bg-[#161A24] text-white p-12">
-        <h1 className="text-4xl font-bold mb-2 text-amber-500">TransitOps</h1>
-        <p className="text-gray-400 mb-12">Smart Transport Operations Platform</p>
-        
-        <div className="space-y-4 mb-10">
-          <p className="font-semibold text-lg">One login, four roles:</p>
-          <ul className="space-y-2 text-gray-300">
-            <li className="flex items-center"><span className="w-2 h-2 bg-amber-500 rounded-full mr-3"></span>Fleet Manager</li>
-            <li className="flex items-center"><span className="w-2 h-2 bg-amber-500 rounded-full mr-3"></span>Dispatcher</li>
-            <li className="flex items-center"><span className="w-2 h-2 bg-amber-500 rounded-full mr-3"></span>Safety Officer</li>
-            <li className="flex items-center"><span className="w-2 h-2 bg-amber-500 rounded-full mr-3"></span>Financial Analyst</li>
-          </ul>
-        </div>
-
-        {/* Demo Credentials */}
-        <div className="mt-4">
-          <p className="text-xs text-gray-500 uppercase tracking-widest mb-3">Quick Demo Login</p>
-          <div className="space-y-2">
-            {DEMO_CREDENTIALS.map((c) => (
-              <button
-                key={c.email}
-                onClick={() => handleDemoLogin(c.email)}
-                className="w-full text-left px-3 py-2 rounded bg-white/5 hover:bg-white/10 text-sm text-gray-300 transition-colors border border-white/10"
-              >
-                <span className="text-amber-400 font-medium">{c.role}</span>
-                <span className="text-gray-500 text-xs block">{c.email}</span>
-              </button>
-            ))}
+    <div className="auth-page">
+      <div className="auth-card">
+        {/* ─── Visual Panel ─── */}
+        <div className="auth-visual">
+          <div>
+            <span className="brand-icon"><i className="fas fa-truck-fast"></i></span>
+            <h2>TransitOps</h2>
+            <p>Smart Transport Operations Platform — manage your entire fleet, drivers, trips and finances from one beautiful dashboard.</p>
           </div>
-          <p className="text-xs text-gray-600 mt-2">All passwords: <span className="text-gray-400">Password123</span></p>
-        </div>
-      </div>
-
-      {/* Right Panel */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md relative">
-          <h2 className="text-2xl font-bold mb-2">Sign in to your account</h2>
-          <p className="text-gray-500 mb-8">Enter your credentials to continue</p>
-          
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500"
-                placeholder="you@company.com"
-                disabled={loading}
-              />
+          <ul>
+            <li><i className="fas fa-circle-check"></i> Real-time fleet &amp; trip tracking</li>
+            <li><i className="fas fa-circle-check"></i> Automated business rule enforcement</li>
+            <li><i className="fas fa-circle-check"></i> Reports, analytics &amp; CSV export</li>
+            <li><i className="fas fa-circle-check"></i> Role-based secure access</li>
+          </ul>
+          <div style={{ marginTop: '20px' }}>
+            <p style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'rgba(255,255,255,0.5)', marginBottom: '10px' }}>Quick Demo Login</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {DEMO_CREDENTIALS.map((c) => (
+                <button
+                  key={c.email}
+                  onClick={() => handleDemoLogin(c.email)}
+                  className="demo-cred-btn"
+                >
+                  <span className="role-name"><i className={`fas ${c.icon}`} style={{ marginRight: '8px' }}></i>{c.role}</span>
+                  <span className="role-email">{c.email}</span>
+                </button>
+              ))}
             </div>
-            
+            <p style={{ fontSize: '0.72rem', color: '#9aa3bd', marginTop: '10px' }}>All passwords: <span style={{ color: '#fff' }}>Password123</span></p>
+          </div>
+        </div>
+
+        {/* ─── Form Panel ─── */}
+        <div className="auth-form-side">
+          <h1>Welcome back</h1>
+          <p className="subtitle">Sign in to continue to your dashboard</p>
+
+          {error && (
+            <div className="rule-error" style={{ marginBottom: '16px' }}>
+              <i className="fas fa-circle-exclamation"></i>
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500"
-                placeholder="••••••••"
-                disabled={loading}
-              />
+              <label className="form-label">Email Address</label>
+              <div style={{ position: 'relative' }}>
+                <i className="fas fa-envelope" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--tx-text-muted)', fontSize: '0.85rem' }}></i>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="form-control"
+                  style={{ paddingLeft: '40px' }}
+                  placeholder="you@transitops.com"
+                  disabled={loading}
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="form-label">Password</label>
+              <div style={{ position: 'relative' }}>
+                <i className="fas fa-lock" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--tx-text-muted)', fontSize: '0.85rem' }}></i>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="form-control"
+                  style={{ paddingLeft: '40px', paddingRight: '44px' }}
+                  placeholder="••••••••"
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--tx-text-muted)', cursor: 'pointer', fontSize: '0.9rem' }}
+                >
+                  <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                </button>
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-500 hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn btn-primary"
+              style={{ width: '100%', justifyContent: 'center', padding: '12px' }}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Signing in…' : 'Sign In'}
+              {!loading && <i className="fas fa-arrow-right"></i>}
             </button>
-
-
           </form>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mt-4 bg-red-50 border border-red-200 text-red-700 p-3 rounded-md text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Mobile demo credentials */}
-          <div className="mt-8 md:hidden">
-            <p className="text-xs text-gray-500 uppercase tracking-widest mb-3">Quick Demo</p>
-            <div className="space-y-2">
-              {DEMO_CREDENTIALS.map((c) => (
-                <button
-                  key={c.email}
-                  onClick={() => handleDemoLogin(c.email)}
-                  className="w-full text-left px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 text-sm transition-colors"
-                >
-                  <span className="text-amber-600 font-medium">{c.role}</span>
-                  <span className="text-gray-400 text-xs block">{c.email}</span>
-                </button>
-              ))}
-              <p className="text-xs text-gray-400">All passwords: Password123</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
