@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api';
+import Pagination from '../components/Pagination';
 
 interface Vehicle {
   id: string;
@@ -57,6 +58,9 @@ const Fleet: React.FC = () => {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [total, setTotal] = useState(0);
 
   const fetchVehicles = useCallback(async () => {
     setLoading(true);
@@ -66,14 +70,17 @@ const Fleet: React.FC = () => {
       if (search) params.set('search', search);
       if (typeFilter) params.set('type', typeFilter);
       if (statusFilter) params.set('status', statusFilter);
+      params.set('page', page.toString());
+      params.set('limit', pageSize.toString());
       const res = await api.get<ApiResponse>(`/vehicles?${params.toString()}`);
       setVehicles(res.data);
+      setTotal(res.meta?.total ?? res.data.length);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load vehicles.');
     } finally {
       setLoading(false);
     }
-  }, [search, typeFilter, statusFilter]);
+  }, [search, typeFilter, statusFilter, page, pageSize]);
 
   useEffect(() => {
     fetchVehicles();

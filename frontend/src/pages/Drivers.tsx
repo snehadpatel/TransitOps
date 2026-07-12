@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
+import Pagination from '../components/Pagination';
 
 interface Driver {
   id: string;
