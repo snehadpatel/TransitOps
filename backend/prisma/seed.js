@@ -96,7 +96,7 @@ async function main() {
   for (const v of vehicleData) {
     await prisma.vehicle.upsert({
       where: { registration_number: v.registration_number },
-      update: {},
+      update: v,
       create: v,
     });
   }
