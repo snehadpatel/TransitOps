@@ -5,9 +5,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 
 import Login from './pages/Login';
 import Layout from './components/Layout';
-
-// Mock components for now to satisfy router
-const Dashboard = () => <div>Dashboard</div>;
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
