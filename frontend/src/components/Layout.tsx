@@ -78,25 +78,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <p className="text-sm font-medium">{user.name}</p>
               <p className="text-xs text-gray-500">{user.role}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <button onClick={toggleTheme} className="text-xl" title="Toggle Dark Mode">
-                {isDark ? '🌙' : '☀️'}
-              </button>
-              <button
-                onClick={handleLogout}
-                className="text-xs px-3 py-1 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 transition-colors"
-              >
-                Sign out
-              </button>
-            </div>
+            <button
+              onClick={handleLogout}
+              className="text-xs px-3 py-1 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 transition-colors"
+            >
+              Sign out
+            </button>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className={`flex-1 flex flex-col overflow-hidden ${isDark ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
+      <div className={`flex-1 flex flex-col overflow-hidden ${isDark ? 'dark bg-[#0B0F17]' : 'bg-gray-50'}`}>
         {/* Top Header */}
-        <header className={`h-16 border-b flex items-center px-8 shadow-sm z-10 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+        <header className={`h-16 border-b flex items-center px-8 shadow-sm z-10 ${isDark ? 'bg-[#151B26] border-[#222B3C]' : 'bg-white border-gray-200'}`}>
           <div className="flex-1">
             <input
               type="text"
@@ -105,7 +100,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             />
           </div>
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-500">Manager: {user.name}</span>
+            <button
+              onClick={toggleTheme}
+              className={`p-2 rounded-full transition-colors ${
+                isDark ? 'text-amber-400 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              title="Toggle Theme"
+            >
+              {isDark ? (
+                <svg className="w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                </svg>
+              ) : (
+                <svg className="w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              )}
+            </button>
+            <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>{user.role}: {user.name}</span>
             <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold">
               {user.name.charAt(0)}
             </div>
@@ -113,7 +125,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className={`flex-1 overflow-auto p-8 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <main className={`flex-1 overflow-auto p-8 ${isDark ? 'bg-[#0B0F17]' : 'bg-gray-50'}`}>
           {children}
         </main>
       </div>
