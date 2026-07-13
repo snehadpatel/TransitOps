@@ -2,7 +2,7 @@
 
 # 🚚 TransitOps - Smart Transport Operations Platform
 
-### *End-to-end transport operations platform that digitizes vehicle, driver, dispatch, maintenance, and expense management*
+### *A premium, end-to-end fleet operations platform featuring role-based controls, real-time analytics, compliance enforcement, and automated logistics scheduling.*
 
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -12,181 +12,212 @@
 
 ---
 
-**TransitOps is a centralized platform that replaces spreadsheets and manual logbooks, allowing organizations to manage the complete lifecycle of their transport operations—from vehicle registration and driver management to dispatching, maintenance, fuel logging, and analytics.**
+**TransitOps is a state-of-the-art enterprise transport operations platform designed to digitize, validate, and optimize logistics workflows. Built with a premium Travelistor Glassmorphism theme, it replaces antiquated spreadsheet logging with automated validation, real-time status synchronization, and precise ROI cost-accounting.**
 
 </div>
-
-## 🚀 Quick Start (Hackathon Setup)
-
-### Prerequisites
-- Node.js 18+ installed
-- PostgreSQL database server running locally
-
-### 1. Backend Setup
-
-Configure your database connection in `backend/.env` (see `backend/.env.example`). Then run:
-
-```bash
-cd backend
-npm install
-npx prisma db push --force-reset
-node prisma/seed.js
-npm start     # Starts on http://localhost:5001
-```
-
-### 2. Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev   # Starts on http://localhost:5173
-```
-
-### 3. Login Credentials (All passwords: `Password123`)
-
-| Email | Role | Access |
-|-------|------|--------|
-| `manager@transitops.com` | Fleet Manager | Vehicles, Maintenance, Settings |
-| `dispatcher@transitops.com` | Dispatcher | Trips, Fleet view |
-| `safety@transitops.com` | Safety Officer | Drivers, suspend/restore |
-| `analyst@transitops.com` | Financial Analyst | Expenses, Analytics, CSV export |
 
 ---
 
-## 🎯 Key Features
+## 🎯 Key Feature Modules
 
-<div align="center">
+TransitOps contains **15 fully-implemented feature modules** divided into core, administrative, and compliance layers:
 
-| 📊 **Dashboard & Analytics** | 🚚 **Vehicle & Driver Mgt** | 🗺️ **Trip Dispatch** | 🔧 **Maintenance & Fuel** |
-|:---------------------------|:---------------------------|:------------------------|:--------------------------|
-| Active Trips & Fleet KPIs | Real-time vehicle status | Automated status transitions | Service logs & scheduling |
-| Fuel Efficiency metrics | License & safety tracking | Cargo weight validation | Operational cost tracking |
-| Vehicle ROI calculations | RBAC for operations | Complete trip lifecycle | Expense management |
+### 📊 1. Dashboard & Analytics
+- **Live KPI Counters:** Tracks fleet utilization rate, active trips, pending dispatches, monthly operational costs, and overall fleet health.
+- **Auto-Refresh Data:** Polls and updates database-wide statistics every 30 seconds to maintain operational accuracy.
+- **Operational Charts (Recharts):** High-fidelity visualizations including:
+  - Vehicle utilization breakdown (Pie/Doughnut)
+  - Trips per month statistics (Bar)
+  - Fuel consumption trends (Line)
+  - Maintenance costs distribution (Bar)
+  - Ancillary & fuel expense breakdowns (Pie)
+  - Driver safety metrics (Bar)
 
-</div>
+### 🚚 2. Fleet & Driver Management
+- **Master Vehicle Registry:** Centralized tracking of registration numbers, odometer readings, vehicle class (Truck, Van, Bus, Motorcycle), max capacity limits, acquisition costs, and document attachments.
+- **Detailed Driver Profiles:** Validates driver licenses, category capabilities, safety scores, and real-time availability.
+- **Validation Constraints:** Automatically checks license and insurance expirations, blocking dispatch if credentials have lapsed or if drivers/vehicles are suspended or undergoing maintenance.
 
-### Complete Feature Set
+### 📋 3. Dispatch & Trip Lifecycle
+- **Step-by-Step Stepper UI:** Seamlessly tracks trips through four distinct phases: `Draft` ➔ `Dispatched` ➔ `Completed` ➔ `Cancelled`.
+- **Cargo Weight Safety Check:** Enforces server-side constraints preventing cargo loads from exceeding a vehicle's maximum load capacity.
+- **Atomic State Synchronization:** Dispatching a trip locks both the driver and vehicle into `ON_TRIP` status; completing or cancelling a trip restores them to `AVAILABLE` atomically via database transactions.
 
-#### 📊 Dashboard & Analytics
-- 🎯 **Real-time KPI Dashboard** - Live overview of Active Vehicles, Pending Trips, and Fleet Utilization (%).
-- 📈 **Performance Analytics** - Fuel Efficiency (Distance/Fuel) and Vehicle ROI calculations.
-- 📉 **Cost Tracking** - Automatically compute total operational cost (Fuel + Maintenance) per vehicle.
-- 📑 **Export Capabilities** - CSV report export with real trip data.
-- 🔄 **Auto-refresh** - Dashboard updates every 30 seconds automatically.
+### 🔧 4. Maintenance & Expenses
+- **Smart Service Log:** Submitting maintenance reports atomically updates vehicles to `IN_SHOP` status, excluding them from new dispatches. Closing log restores them.
+- **Operational Cost Accounting:** Integrates fuel logs (liters, total cost) and ancillary expenses (tolls, parking, repairs) to calculate individual vehicle ROIs.
 
-#### 🚚 Vehicle & Driver Management
-- 📦 **Master Vehicle Registry** - Centralized tracking of capacity, odometer, acquisition cost, and live status.
-- 👤 **Comprehensive Driver Profiles** - Track license validity, safety scores, contact info, and availability.
-- 🛡️ **Strict Business Rules** - Automatic validation preventing suspended drivers or "In Shop" vehicles from dispatch.
-- 🔄 **Real-Time Status Synchronization** - Dispatching automatically updates vehicle and driver statuses to "On Trip".
-
-#### 📋 Trip Management & Dispatch
-- ⚡ **Streamlined Dispatch Workflow** - Create trips mapping source to destination with load validation.
-- 🔄 **Trip Lifecycle Management** - Track statuses from Draft → Dispatched → Completed → Cancelled.
-- ⚖️ **Safety Validations** - Ensure cargo weight never exceeds a vehicle's maximum load capacity (enforced server-side).
-- ✅ **Complete/Cancel Trips** - Automatically restores vehicle and driver status to Available.
-
-#### 🔧 Maintenance & Expenses
-- 📅 **Automated Maintenance Logs** - Creating records instantly changes vehicle status to "In Shop", hiding it from dispatch.
-- 💰 **Expense Tracking** - Record fuel logs (liters, cost, date) and ancillary expenses like tolls.
-- ✅ **Lifecycle Recovery** - Closing maintenance instantly restores vehicles back to the Available fleet.
-
-#### 🔐 Security & Authentication
-- 🔑 **Secure JWT Authentication** - Real login with bcrypt password hashing and 5-attempt lockout.
-- 🛡️ **Role-Based Access Control (RBAC)** - Tailored access for Fleet Managers, Dispatchers, Safety Officers, and Financial Analysts.
-- 🔒 **Session Persistence** - JWT token stored in localStorage, session restored on page refresh.
+### 🔔 5. Advanced App Components
+- **Real-Time Notification System:** Socket-connected notification center informing officers of upcoming license/insurance expirations and pending maintenance logs.
+- **Unified Global Search:** Navbar-integrated debounced search querying vehicles, drivers, and trips concurrently. Cache history is saved via `localStorage`.
+- **Sorting, Filtering, & Pagination:** Standardized `TableSort` and `AdvancedFilter` components with ellipsis pagination, custom page sizing, and multi-column sort headers.
+- **PDF & CSV Reports Engine:** Filter and download downloadable CSV files or auto-formatted PDF reports of trip details, expenses, and fuel usage.
+- **Compliance Audit Logging:** Real-time database event logger detailing the actor, target resource, action type (CREATE/UPDATE/DELETE/LOGIN), and IP address of all modifications.
+- **Settings Module:** Custom profiling, application unit preferences, and a live Role-Based Access Control (RBAC) permission grid.
 
 ---
 
 ## 🏗️ Architecture Overview
 
-<div align="center">
+TransitOps uses a modern, multi-tier service architecture optimized for fast load times and clean component separation:
 
 ```mermaid
-graph LR
-    subgraph Frontend["🎨 FRONTEND LAYER"]
-        A[React + Vite]
-        B[TailwindCSS]
-        C[Context API + JWT]
+graph TD
+    subgraph Client ["🎨 FRONTEND (React + Vite + TypeScript)"]
+        UI[Travelistor Glassmorphism UI]
+        State[React Context / JWT Session]
+        API_Client[Axios Client / API Wrapper]
+        WS_Client[Socket.io-client]
     end
-    
-    subgraph Backend["🔙 BACKEND LAYER"]
-        F[Express.js API]
-        G[JWT Auth Middleware]
-        H[Zod Validation + RBAC]
+
+    subgraph Server ["🔙 BACKEND (Node.js + Express)"]
+        Routes[API Gateway / Routing Layer]
+        Auth_Mid[JWT Authentication Middleware]
+        RBAC_Mid[Role-Based Access Control Middleware]
+        Zod_Mid[Zod Schema Validator]
+        
+        subgraph Engine ["⚙️ CORE SERVICES"]
+            Logic[Business & Validation Services]
+            Socket_Server[Socket.io WebSockets]
+            Cron[node-cron Expiry Checkers]
+        end
     end
-    
-    subgraph Database["💾 DATA LAYER"]
-        K[PostgreSQL]
-        L[Prisma ORM]
+
+    subgraph Storage ["💾 DATABASE LAYER"]
+        ORM[Prisma ORM Client]
+        DB[(PostgreSQL)]
+        Uploads[Local Filesystem uploads/]
     end
+
+    UI --> State
+    UI --> API_Client
+    UI --> WS_Client
     
-    Frontend -->|REST API /api| Backend
-    Backend -->|SQL Queries| Database
+    API_Client -->|REST API Requests| Routes
+    WS_Client <-->|Real-time alerts / updates| Socket_Server
     
-    style Frontend fill:#61DAFB,stroke:#0284c7,stroke-width:3px
-    style Backend fill:#68A063,stroke:#15803d,stroke-width:3px
-    style Database fill:#336791,stroke:#1e40af,stroke-width:3px
+    Routes --> Auth_Mid
+    Auth_Mid --> RBAC_Mid
+    RBAC_Mid --> Zod_Mid
+    Zod_Mid --> Logic
+    
+    Logic --> ORM
+    Cron --> ORM
+    ORM --> DB
+    Logic --> Uploads
 ```
-
-**Architecture Flow:**
-- **Frontend Layer**: React SPA built with Vite, utilizing TailwindCSS and React Context for JWT-based auth state.
-- **Backend Layer**: Scalable Node.js + Express REST API featuring JWT authentication, RBAC middleware, and Zod input validation.
-- **Data Layer**: PostgreSQL database managed by Prisma ORM for type-safe, relational data storage.
-
-</div>
 
 ---
 
-## 📁 Project Structure
+## 🚀 Quick Start (Local Setup)
 
+### Prerequisites
+- [Node.js](https://nodejs.org/) (Version 18 or 20+)
+- [PostgreSQL](https://www.postgresql.org/) database running locally
+
+### 1. Database Setup
+Create a PostgreSQL database named `transitops`.
+Initialize your configuration in `backend/.env` (use `backend/.env.example` as a template):
+```env
+PORT=5001
+JWT_SECRET=super_secret_jwt_key_change_me_in_production
+DATABASE_URL="postgresql://<username>:<password>@localhost:5432/transitops?schema=public"
+CORS_ORIGIN=http://localhost:5173
+JWT_EXPIRES_IN=8h
+NODE_ENV=development
 ```
-TransitOps/
-│
-├── 📄 README.md                        # You are here!
-│
-├── 📂 docs/                            # Unified Platform Documentation
-│   ├── 📄 ARCHITECTURE.md              # Tech stack & database decisions
-│   ├── 📄 api-reference.md             # API schema & endpoints reference
-│   ├── 📄 decisions.md                 # Validation rule checklists & design decisions
-│   └── 📄 er-diagram.md                # Entity Relationship diagram
-│
-├── 🔙 backend/                         # Node.js + Express API
-│   ├── 📦 package.json                 # Backend dependencies
-│   ├── 🔐 .env                         # Environment variables (not committed)
-│   │
-│   ├── 🗄️ prisma/                      # Database layer
-│   │   ├── 📋 schema.prisma            # Prisma database schema
-│   │   └── 🌱 seed.js                  # Seed script (4 users, 5 vehicles, 4 drivers)
-│   │
-│   └── 💻 src/                         # Source code
-│       ├── 🚀 server.js                # Application entry point
-│       ├── 🎮 controllers/             # Request handlers
-│       ├── 🛡️ middlewares/             # JWT auth, RBAC, validation
-│       ├── 🛣️ routes/                  # API endpoint definitions
-│       └── 🏢 services/                # Business logic & DB queries
-│
-└── 🎨 frontend/                        # React + Vite Frontend
-    ├── 📦 package.json                 # Frontend dependencies
-    └── 💻 src/                         # Source code
-        ├── 🧩 components/              # Layout, ProtectedRoute
-        ├── 📄 pages/                   # Dashboard, Fleet, Drivers, Trips, etc.
-        ├── 🌐 context/                 # AuthContext (JWT + session restore)
-        └── 📡 services/                # api.ts (fetch wrapper with JWT headers)
+
+### 2. Run Backend Setup
+Execute migrations and seed the initial dataset:
+```bash
+cd backend
+npm install
+npx prisma db push --force-reset
+node prisma/seed.js
+npm run dev     # Launches dev server on http://localhost:5001
 ```
+
+### 3. Run Frontend Setup
+Launch the client application:
+```bash
+cd ../frontend
+npm install
+npm run dev     # Launches UI on http://localhost:5173
+```
+
+---
+
+## 🔐 Login Credentials (All passwords: `Password123`)
+
+Access permissions are enforced throughout both the frontend routing and backend endpoints:
+
+| Email | Role | Accessible Sections & Controls |
+|-------|------|--------------------------------|
+| `manager@transitops.com` | Fleet Manager | Full administrative access, Settings management, Users, Audit Logs, and Fleet. |
+| `dispatcher@transitops.com` | Dispatcher | Trips management, Fleet statuses, Dispatch scheduling, and Route planning. |
+| `safety@transitops.com` | Safety Officer | Drivers management, Driver safety scoring, license expirations, and status suspension/restoration. |
+| `analyst@transitops.com` | Financial Analyst | Expenses tracking, Fuel logging, Analytics dashboard, and CSV/PDF export. |
 
 ---
 
 ## 🛡️ Business Rules Enforced (Server-Side)
 
-| Rule | Where Enforced |
-|------|---------------|
-| Registration numbers must be unique | DB unique constraint |
-| Retired/In Shop vehicles hidden from dispatch | `GET /vehicles/available` filter |
-| Suspended drivers blocked from dispatch | `GET /drivers/available` filter |
-| Expired license → blocked from dispatch | `dispatchTrip()` service validation |
-| Cargo weight > vehicle capacity → blocked | `dispatchTrip()` service validation |
-| Dispatch atomically sets Vehicle + Driver → ON_TRIP | Prisma `$transaction()` |
-| Complete trip atomically restores Vehicle + Driver → AVAILABLE | Prisma `$transaction()` |
-| Maintenance log → Vehicle → IN_SHOP (atomic) | Prisma `$transaction()` |
-| 5 failed login attempts → 15-minute lockout | `authService.login()` |
+| Rule Description | Enforcing Component | Handling Behavior |
+|------------------|----------------------|-------------------|
+| **Unique Vehicle Reg.** | PostgreSQL / Prisma | Rejects duplicate registration numbers with `400 Bad Request`. |
+| **Active Vehicle Check** | `GET /vehicles/available` | Excludes vehicles in `IN_SHOP` or `RETIRED` statuses from dispatch dropdowns. |
+| **Active Driver Check** | `GET /drivers/available` | Excludes drivers marked as `SUSPENDED` or `OFF_DUTY` from active routes. |
+| **Licensing Expiration Check** | `dispatchTrip()` | Rejects dispatch if the driver's license expiration date is in the past. |
+| **Insurance Expiration Check** | `dispatchTrip()` | Rejects dispatch if the vehicle's insurance policy has expired. |
+| **Cargo Overload Check** | `dispatchTrip()` | Checks `cargo_weight > max_load_capacity`. Throws `400 Overload Warning`. |
+| **Atomic Dispatch** | Prisma `$transaction()` | Atomically transitions Driver & Vehicle to `ON_TRIP`. Reverts on failures. |
+| **Atomic Completion** | Prisma `$transaction()` | Records odometer/fuel updates, returning driver/vehicle back to `AVAILABLE`. |
+| **Rate-Limited Lockout** | `authService.login()` | Multi-attempt tracking. Lockout duration is 15 minutes after 5 consecutive failures. |
+| **Self-Deletion Protection** | `/api/users/:id` | Rejects requests matching the logged-in user ID, preventing admin lockouts. |
+
+---
+
+## 📁 Project Directory Structure
+
+```
+TransitOps/
+│
+├── 📂 backend/                         # Express REST API & Database Management
+│   ├── 📦 package.json                 # Backend dependencies & custom scripts
+│   ├── 🔐 .env                         # Local environment configuration
+│   │
+│   ├── 🗄️ prisma/                      # Database Schema & Seed Data
+│   │   ├── 📋 schema.prisma            # Core DB model relations & indexes
+│   │   └── 🌱 seed.js                  # Pre-seeded users, vehicles, and logs
+│   │
+│   └── 💻 src/                         # Backend Source Code
+│       ├── 🚀 server.js                # App gateway & Socket.io setup
+│       ├── 🎮 controllers/             # Express request coordinators
+│       ├── ⏰ jobs/                    # node-cron scheduled tasks (License Expirations)
+│       ├── 🛡️ middlewares/             # JWT, Zod validations, and RBAC rules
+│       ├── 🛣️ routes/                  # Express route controllers
+│       ├── 🏢 services/                # Business logic implementation
+│       └── 🏢 utils/                   # Shared helpers (Prisma clients, pagination)
+│
+├── 🎨 frontend/                        # React Client Application
+│   ├── 📦 package.json                 # Client dependencies & Vite scripts
+│   ├── 🎨 tailwind.config.js           # Tailwind configurations (if required)
+│   │
+│   └── 💻 src/                         # Client Source Code
+│       ├── 🚀 main.tsx                 # Client setup & stylesheets mount
+│       ├── 🧩 components/              # Global components & layouts
+│       │   ├── 📁 Layout/              # Custom Sidebar & App Layout
+│       │   ├── 📁 ui/                  # Reusable Badge, Modal, and Spinner elements
+│       │   ├── 🔍 GlobalSearch.tsx     # Debounced global search component
+│       │   └── 🔔 NotificationDropdown.tsx # Real-time notification menu
+│       │
+│       ├── 🌐 context/                 # State providers (JWT Auth validation)
+│       ├── 📄 pages/                   # Redesigned view controllers (Trips, Settings, Users...)
+│       └── 📡 services/                # Axios API request abstractions
+│
+└── 📂 docs/                            # Unified Technical Guides
+    ├── 📄 ARCHITECTURE.md              # Technical stack & design paradigms
+    ├── 📄 api-reference.md             # Standard API schema endpoints
+    ├── 📄 decisions.md                 # Design decisions & rules checklist
+    └── 📄 er-diagram.md                # DB Entity Relationship visualizations
+```
